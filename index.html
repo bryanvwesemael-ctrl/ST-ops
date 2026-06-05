@@ -1657,7 +1657,7 @@ window.loadDetail=async(type,datum,week_nr,extra,label)=>{
   tbody.innerHTML=taken.map(t=>{
     const a=afMap[t.id];
     const isDone=!!a?.gedaan;
-    const ts=a?.created_at?new Date(a.created_at).toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'}):'—';
+    const ts='—';
     const durTxt=a?.duur_min?formatUren(a.duur_min):'—';
     return`<tr>
       <td><div style="font-weight:500;font-size:12px">${t.naam}</div><span class="t-id">${t.taak_id}</span></td>
@@ -1725,10 +1725,10 @@ window.exportCSV=async()=>{
   const van=document.getElementById('hist-van').value,tot=document.getElementById('hist-tot').value;
   if(!van||!tot){toast('Stel eerst een datumrange in','e');return}
   toast('CSV wordt opgemaakt...','i');
-  const{data}=await SB.from('afvinkingen').select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,created_at,taken(naam,taak_id,frequentie)').gte('datum',van).lte('datum',tot).order('datum',{ascending:false}).limit(2000);
+  const{data}=await SB.from('afvinkingen').select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,taken(naam,taak_id,frequentie)').gte('datum',van).lte('datum',tot).order('datum',{ascending:false}).limit(2000);
   if(!data?.length){toast('Geen data om te exporteren','e');return}
   const rows=[['Datum','Taak-ID','Taaknaam','Frequentie','Gedaan','Uitvoerder','Duur (min)','Opmerking','Aangemaakt']];
-  data.forEach(a=>rows.push([a.datum,a.taken?.taak_id||'',a.taken?.naam||'',a.taken?.frequentie||'',a.gedaan?'Ja':'Nee',a.uitvoerder||'',a.duur_min||'',(a.opmerking||'').replace(/,/g,';'),a.created_at?new Date(a.created_at).toLocaleString('nl-BE'):'']));
+  data.forEach(a=>rows.push([a.datum,a.taken?.taak_id||'',a.taken?.naam||'',a.taken?.frequentie||'',a.gedaan?'Ja':'Nee',a.uitvoerder||'',a.duur_min||'',(a.opmerking||'').replace(/,/g,';'),'']));
   const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
@@ -1795,7 +1795,7 @@ function getReportRange(){
 
 async function fetchReportRows(range){
   const{data,error}=await SB.from('afvinkingen')
-    .select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,created_at,taak_id,taken(naam,taak_id,frequentie,verantwoordelijke,prioriteit)')
+    .select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,taak_id,taken(naam,taak_id,frequentie,verantwoordelijke,prioriteit)')
     .gte('datum',range.van).lte('datum',range.tot).order('datum',{ascending:true}).limit(5000);
   if(error)throw error;
   return data||[];
@@ -1978,28 +1978,18 @@ window.renderReportPreview=async()=>{
 
 async function loadPdfLibs(){
   if(jsPDFCtor&&autoTableFn)return;
-  // Use UMD builds from unpkg — much more reliable in standalone HTML than esm.sh ESM builds
-  await new Promise((res,rej)=>{
-    if(window.jspdf){res();return}
-    const s=document.createElement('script');
-    s.src='https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js';
-    s.onload=res;s.onerror=()=>rej(new Error('jsPDF laden mislukt'));
-    document.head.appendChild(s);
-  });
-  await new Promise((res,rej)=>{
-    if(window.jspdfAutoTable){res();return}
-    const s=document.createElement('script');
-    s.src='https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js';
-    s.onload=res;s.onerror=()=>rej(new Error('autoTable laden mislukt'));
-    document.head.appendChild(s);
-  });
-  jsPDFCtor=window.jspdf?.jsPDF||window.jsPDF;
-  if(!jsPDFCtor)throw new Error('jsPDF niet beschikbaar na laden');
-  // autoTable injects itself onto jsPDF prototype automatically
-  autoTableFn=(doc,opts)=>{
-    if(typeof doc.autoTable==='function'){doc.autoTable(opts);return}
-    throw new Error('autoTable niet beschikbaar');
-  };
+  // Both imports use ?deps=jspdf@2.5.1 to share the SAME jsPDF instance.
+  // Without this, esm.sh gives separate copies and autoTable patches the wrong prototype.
+  const[jsPDFMod,autoMod]=await Promise.all([
+    import('https://esm.sh/jspdf@2.5.1'),
+    import('https://esm.sh/jspdf-autotable@3.8.4?deps=jspdf@2.5.1')
+  ]);
+  jsPDFCtor=jsPDFMod.jsPDF||jsPDFMod.default;
+  if(!jsPDFCtor)throw new Error('jsPDF kon niet worden geladen');
+  // Use the function API: autoTable(doc, opts) — always works regardless of prototype state.
+  const fn=autoMod.default||autoMod.autoTable;
+  if(typeof fn!=='function')throw new Error('autoTable kon niet worden geladen');
+  autoTableFn=(doc,opts)=>fn(doc,opts);
 }
 
 function docTable(doc,head,body,startY,opts={}){
