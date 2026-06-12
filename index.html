@@ -1,0 +1,2700 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ST·OPS — Stock Team v6.9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f2f5;--bg2:#e8ebf0;--surface:#ffffff;--surface2:#f8f9fb;
+  --border:#e1e4eb;--border2:#c8cdd8;
+  --txt:#0f172a;--txt2:#475569;--txt3:#94a3b8;--txt4:#cbd5e1;
+  --orange:#ea580c;--orange-bg:#fff7f3;--orange-br:#fdd0b0;--orange-dk:#c2440a;
+  --blue:#2563eb;--blue-bg:#eff4ff;--blue-br:#bfcffe;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-br:#bbf7d0;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-br:#ddd6fe;
+  --red:#dc2626;--red-bg:#fef2f2;--red-br:#fecaca;
+  --yellow:#b45309;--yellow-bg:#fffbeb;--yellow-br:#fde68a;
+  --r:7px;--r2:12px;--r3:16px;
+  --mono:'Geist Mono',monospace;--sans:'Geist',sans-serif;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --shadow2:0 4px 16px rgba(0,0,0,.10),0 2px 4px rgba(0,0,0,.05);
+  --shadow3:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.5}
+::selection{background:rgba(37,99,235,.15)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ─── SHELL ─── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+
+/* ─── SIDEBAR ─── */
+.s-logo{padding:18px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.s-logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--orange) 0%,#f97316 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(234,88,12,.3)}
+.s-logo-mark svg{width:16px;height:16px;color:#fff}
+.s-logo-name{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--txt);line-height:1.2;letter-spacing:-.3px}
+.s-logo-sub{font-size:10px;color:var(--txt3);margin-top:1px}
+nav{flex:1;padding:10px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.nav-sep{font-family:var(--mono);font-size:8px;letter-spacing:2.5px;color:var(--txt4);text-transform:uppercase;padding:12px 10px 5px;margin-top:4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--txt2);border:none;background:none;width:100%;text-align:left;font-family:var(--sans);transition:all .12s;position:relative}
+.nav-item:hover{background:var(--bg);color:var(--txt)}
+.nav-item.active{background:var(--orange-bg);color:var(--orange);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;background:var(--orange);border-radius:0 3px 3px 0}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.55}
+.nav-item.active .nav-icon{opacity:1}
+.nav-item:hover .nav-icon{opacity:.8}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:20px;font-weight:600;min-width:18px;text-align:center}
+.nav-badge:empty{display:none}
+.s-footer{padding:12px;border-top:1px solid var(--border)}
+.conn-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt3);margin-bottom:8px}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--txt4);flex-shrink:0;transition:.3s}
+.conn-dot.ok{background:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+.conn-dot.err{background:var(--red)}
+.s-btn{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--txt2);font-size:11px;font-family:var(--sans);cursor:pointer;text-align:left;transition:.12s}
+.s-btn:hover{background:var(--bg);color:var(--txt)}
+
+/* ─── TOPBAR ─── */
+.topbar{height:54px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;box-shadow:var(--shadow)}
+.hamburger{display:none;background:none;border:1px solid var(--border);border-radius:var(--r);padding:5px 7px;cursor:pointer;color:var(--txt2);transition:.12s}
+.hamburger:hover{background:var(--bg)}
+.hamburger svg{width:16px;height:16px;display:block}
+.page-title{font-size:13px;font-weight:600;color:var(--txt);white-space:nowrap;letter-spacing:-.2px}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.top-pill{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--txt3);background:var(--surface2);white-space:nowrap}
+.top-pill.orange{border-color:var(--orange-br);color:var(--orange);background:var(--orange-bg);font-weight:600}
+
+/* user pill in topbar */
+.user-pill{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;transition:.15s;font-size:11px;color:var(--txt2)}
+.user-pill:hover{border-color:var(--orange-br);background:var(--orange-bg);color:var(--orange)}
+.user-pill-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#f97316);color:#fff;font-family:var(--mono);font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-pill span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+
+/* ─── PAGES ─── */
+.page{display:none;flex:1;flex-direction:column;min-height:0}
+.page.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:fadeIn .2s ease}
+
+/* ─── SETUP ─── */
+.setup-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
+.setup-box{width:500px;max-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);box-shadow:var(--shadow3);overflow:hidden}
+.setup-top{padding:28px 28px 20px;border-bottom:1px solid var(--border)}
+.setup-tag{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.setup-h{font-size:20px;font-weight:600;margin-bottom:4px;letter-spacing:-.3px}
+.setup-sub{font-size:12px;color:var(--txt2);line-height:1.6}
+.setup-body{padding:24px 28px}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-br);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.5;margin-bottom:16px}
+.step-card{background:var(--bg);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;border-left:3px solid var(--orange)}
+.step-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:4px;font-weight:600}
+.step-txt{font-size:12px;color:var(--txt2);line-height:1.5}
+.step-txt code{background:var(--orange-bg);color:var(--orange);padding:1px 5px;border-radius:3px;font-family:var(--mono);font-size:10px}
+.fl{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fl label{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;font-weight:600}
+.fi{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;font-size:13px;color:var(--txt);font-family:var(--sans);outline:none;transition:.15s}
+.fi:focus{border-color:var(--orange);background:var(--surface);box-shadow:0 0 0 3px rgba(234,88,12,.08)}
+.fi::placeholder{color:var(--txt4)}
+.setup-err{color:var(--red);font-size:11px;font-family:var(--mono);margin-top:8px;display:none}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);font-family:var(--sans);transition:all .12s;white-space:nowrap;text-decoration:none;letter-spacing:-.1px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 1px 4px rgba(234,88,12,.22)}
+.btn-primary:hover{background:var(--orange-dk);border-color:var(--orange-dk)}
+.btn-ghost{background:transparent;color:var(--txt2);border-color:var(--border)}
+.btn-ghost:hover{background:var(--bg);color:var(--txt);border-color:var(--border2)}
+.btn-danger{background:transparent;color:var(--red);border-color:var(--red-br)}
+.btn-danger:hover{background:var(--red-bg)}
+.btn-success{background:transparent;color:var(--green);border-color:var(--green-br)}
+.btn-success:hover{background:var(--green-bg)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:10px}
+.btn svg{width:12px;height:12px}
+.btns{display:flex;gap:8px}
+
+/* ─── SCORE CARDS ─── */
+.score-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:18px;flex-shrink:0}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;position:relative;box-shadow:var(--shadow);transition:box-shadow .15s;overflow:hidden}
+.sc:hover{box-shadow:var(--shadow2)}
+.sc-accent{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r2) var(--r2) 0 0}
+.sc-label{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px;margin-top:4px;font-weight:500}
+.sc-val{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1;margin-bottom:4px;transition:color .3s;letter-spacing:-1px}
+.sc-val.good{color:var(--green)}.sc-val.warn{color:var(--yellow)}.sc-val.bad{color:var(--red)}.sc-val.none{color:var(--txt4)}
+.sc-sub{font-size:11px;color:var(--txt3);line-height:1.4}
+.sc-bar{height:5px;background:var(--bg2);border-radius:3px;margin-top:12px;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.sc-uren{font-family:var(--mono);font-size:10px;color:var(--txt3);margin-top:5px}
+
+/* ─── DASHBOARD ─── */
+.dash-body{padding:0 18px 18px;display:flex;flex-direction:column;gap:16px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ─── CARDS ─── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .15s}
+.card:hover{box-shadow:var(--shadow2)}
+.card-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2)}
+.card-title{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);font-weight:600}
+.card-body{padding:14px}
+
+/* ─── CHECKLIST ─── */
+.cl-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;box-shadow:var(--shadow)}
+.cl-type-pill{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:5px 12px;border-radius:20px;border:1px solid;font-weight:600;flex-shrink:0}
+.cl-type-pill.dag{color:var(--orange);border-color:var(--orange-br);background:var(--orange-bg)}
+.cl-type-pill.week{color:var(--blue);border-color:var(--blue-br);background:var(--blue-bg)}
+.cl-type-pill.mnd{color:var(--green);border-color:var(--green-br);background:var(--green-bg)}
+.cl-type-pill.nodig{color:var(--purple);border-color:var(--purple-br);background:var(--purple-bg)}
+.cl-progress{display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
+.cl-bar-outer{flex:1;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.cl-bar-inner{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.cl-frac{font-family:var(--mono);font-size:11px;color:var(--txt3);white-space:nowrap}
+.cl-pct{font-family:var(--mono);font-size:16px;font-weight:700;min-width:48px;text-align:right;white-space:nowrap;transition:color .3s}
+.cl-pct.good{color:var(--green)}.cl-pct.warn{color:var(--yellow)}.cl-pct.bad{color:var(--red)}
+
+/* datum-modus banner */
+.datum-modus-bar{background:var(--yellow-bg);border-bottom:1px solid var(--yellow-br);padding:7px 16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--yellow);flex-shrink:0;flex-wrap:wrap}
+.datum-modus-bar strong{font-weight:600}
+.datum-mode-picker{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.dm-date-inp{padding:4px 8px;border:1px solid var(--yellow-br);border-radius:var(--r);font-size:12px;font-family:var(--mono);color:var(--txt);background:var(--surface);outline:none;cursor:pointer}
+.dm-date-inp:focus{border-color:var(--yellow)}
+
+/* search */
+.search-wrap{padding:10px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0}
+.search-inner{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px;transition:.15s}
+.search-inner:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.07)}
+.search-icon{width:14px;height:14px;color:var(--txt3);flex-shrink:0}
+.search-input{border:none;outline:none;font-size:13px;color:var(--txt);background:transparent;width:100%;font-family:var(--sans)}
+.search-input::placeholder{color:var(--txt4)}
+.search-clear{border:none;background:none;color:var(--txt3);cursor:pointer;padding:0;line-height:1;font-size:14px;transition:.1s}
+.search-clear:hover{color:var(--txt)}
+
+/* task list */
+.task-list{flex:1;overflow-y:auto}
+.task-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;user-select:none}
+.task-row:last-child{border-bottom:none}
+.task-row:hover{background:var(--bg)}
+.task-row.done{background:var(--surface2)}
+.task-row.done:hover{background:var(--bg)}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--surface)}
+.chk.on{background:var(--green);border-color:var(--green);box-shadow:0 1px 4px rgba(22,163,74,.3)}
+.chk svg{width:11px;height:11px;opacity:0;transform:scale(.5) rotate(-10deg);transition:all .15s}
+.chk.on svg{opacity:1;transform:scale(1) rotate(0deg)}
+.t-info{flex:1;min-width:0}
+.t-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.15s}
+.task-row.done .t-name{color:var(--txt3);text-decoration:line-through;text-decoration-color:var(--txt4)}
+.t-desc{font-size:11px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.task-row.done .t-desc{color:var(--txt4)}
+.t-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.t-id{font-family:var(--mono);font-size:9px;color:var(--orange);background:var(--orange-bg);border:1px solid var(--orange-br);padding:2px 7px;border-radius:4px;font-weight:500}
+.t-who{font-size:10px;color:var(--txt3);max-width:180px;white-space:normal;overflow:visible}
+.person-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;max-width:240px}
+.person-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:20px;border:1px solid var(--orange-br);background:var(--orange-bg);color:var(--orange);white-space:nowrap;font-weight:500}
+.person-chip.done{border-color:var(--green-br);background:var(--green-bg);color:var(--green)}
+.person-chip.more{border-color:var(--border);background:var(--bg2);color:var(--txt3)}
+.people-picker{border:1px solid var(--border);border-radius:var(--r);background:var(--surface2);padding:8px;display:flex;flex-direction:column;gap:8px}
+.people-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px;max-height:145px;overflow:auto}
+.people-check{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:5px 7px;font-size:11px;color:var(--txt2);cursor:pointer;transition:.12s}
+.people-check:hover{border-color:var(--orange-br);color:var(--txt)}
+.people-check input{accent-color:var(--orange);width:13px;height:13px;flex-shrink:0}
+.people-picker.compact{min-width:260px;max-width:420px;padding:7px}
+.people-picker.compact .people-picker-grid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));max-height:115px}
+.people-extra{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:6px 8px;font-size:12px;color:var(--txt);font-family:var(--sans);outline:none}
+.people-extra:focus{border-color:var(--orange)}
+.person-duration-box{min-width:240px;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:7px;display:flex;flex-direction:column;gap:5px}
+.person-duration-title{font-family:var(--mono);font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt3);font-weight:600;margin-bottom:2px}
+.pd-row{display:grid;grid-template-columns:minmax(74px,1fr) 76px;gap:6px;align-items:center}
+.pd-name{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-input{width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--mono);color:var(--txt);background:var(--bg);outline:none}
+.pd-input:focus{border-color:var(--orange);background:var(--surface)}
+.pd-total{font-size:10px;color:var(--txt3);font-family:var(--mono);padding-top:2px;border-top:1px solid var(--border)}
+.pd-muted{font-size:10px;color:var(--txt4);font-family:var(--mono)}
+.t-dur-breakdown{font-size:9px;color:var(--txt3);font-family:var(--mono);margin-top:2px;line-height:1.5;max-width:260px;white-space:normal}
+.capacity-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.capacity-kpi{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;min-height:68px}
+.capacity-kpi-label{font-family:var(--mono);font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt3);font-weight:600;margin-bottom:5px}
+.capacity-kpi-value{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-.3px}
+.capacity-kpi-value.good{color:var(--green)}.capacity-kpi-value.warn{color:var(--yellow)}.capacity-kpi-value.bad{color:var(--red)}
+.capacity-kpi-sub{font-size:10px;color:var(--txt3);margin-top:2px;line-height:1.4}
+.capacity-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.capacity-row{display:grid;grid-template-columns:160px minmax(160px,1fr) 96px 96px 86px;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--border)}
+.capacity-row:last-child{border-bottom:none}
+.capacity-row.head{background:var(--surface2);font-family:var(--mono);font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt3);font-weight:600}
+.cap-name{font-weight:600;color:var(--txt);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cap-bar{height:7px;background:var(--bg2);border-radius:5px;overflow:hidden}
+.cap-fill{height:100%;border-radius:5px;transition:width .4s}
+.cap-num{font-family:var(--mono);font-size:11px;color:var(--txt2);white-space:nowrap}
+.cap-num.good{color:var(--green)}.cap-num.warn{color:var(--yellow)}.cap-num.bad{color:var(--red)}
+.capacity-note{font-size:11px;color:var(--txt3);line-height:1.5;margin-top:8px}
+@media(max-width:900px){.capacity-summary{grid-template-columns:1fr 1fr}.capacity-row{grid-template-columns:1fr;gap:5px}.capacity-row.head{display:none}}
+.t-done-info{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.t-done-name{font-size:11px;color:var(--green);font-family:var(--mono);display:flex;align-items:center;gap:3px}
+.t-done-name svg{width:10px;height:10px}
+.t-done-dur{font-size:10px;color:var(--txt3);font-family:var(--mono)}
+.t-prio-hoog{font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:4px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-br);font-weight:600}
+.task-row.freq-dag{border-left:3px solid var(--orange)}
+.task-row.freq-week{border-left:3px solid var(--blue)}
+.task-row.freq-mnd{border-left:3px solid var(--green)}
+.task-row.freq-nodig{border-left:3px solid var(--purple)}
+.task-row.done.freq-dag,.task-row.done.freq-week,.task-row.done.freq-mnd,.task-row.done.freq-nodig{border-left-color:var(--border)}
+.empty-state{padding:48px;text-align:center;color:var(--txt3)}
+.empty-icon{margin-bottom:10px;opacity:.3}
+.empty-icon svg{width:36px;height:36px}
+.empty-txt{font-size:12px;font-family:var(--mono)}
+
+/* ─── INLINE PANEL ─── */
+.task-panel{display:none;background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 18px 12px 52px;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.task-panel.open{display:flex}
+.tp-group{display:flex;flex-direction:column;gap:4px}
+.tp-label{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);font-weight:600}
+.tp-sel{padding:6px 9px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--sans);color:var(--txt);background:var(--surface);outline:none;transition:.15s;min-width:160px}
+.tp-sel:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.08)}
+.tp-inp{padding:6px 9px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--mono);color:var(--txt);background:var(--surface);outline:none;transition:.15s;width:90px}
+.tp-inp:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.08)}
+.tp-ta{padding:6px 9px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--sans);color:var(--txt);background:var(--surface);outline:none;transition:.15s;width:220px;resize:none;height:34px}
+.tp-ta:focus{border-color:var(--orange)}
+.tp-done{padding:7px 16px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--sans);background:var(--green);color:#fff;transition:.12s;white-space:nowrap;align-self:flex-end;box-shadow:0 1px 4px rgba(22,163,74,.25)}
+.tp-done:hover{background:#15803d}
+.tp-cancel{padding:6px 10px;border-radius:var(--r);font-size:12px;cursor:pointer;border:1px solid var(--border);font-family:var(--sans);background:transparent;color:var(--txt3);transition:.12s;align-self:flex-end}
+.tp-cancel:hover{background:var(--bg);color:var(--txt)}
+
+/* ─── TABELLEN ─── */
+.tbl-wrap{overflow-x:auto;flex:1}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface2);font-weight:600}
+td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--txt);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap;font-weight:500}
+.badge::before{content:'';width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.b-green{color:var(--green);border-color:var(--green-br);background:var(--green-bg)}.b-green::before{background:var(--green)}
+.b-red{color:var(--red);border-color:var(--red-br);background:var(--red-bg)}.b-red::before{background:var(--red)}
+.b-orange{color:var(--orange);border-color:var(--orange-br);background:var(--orange-bg)}.b-orange::before{background:var(--orange)}
+.b-blue{color:var(--blue);border-color:var(--blue-br);background:var(--blue-bg)}.b-blue::before{background:var(--blue)}
+.b-purple{color:var(--purple);border-color:var(--purple-br);background:var(--purple-bg)}.b-purple::before{background:var(--purple)}
+.b-yellow{color:var(--yellow);border-color:var(--yellow-br);background:var(--yellow-bg)}.b-yellow::before{background:var(--yellow)}
+.b-gray{color:var(--txt3);border-color:var(--border);background:var(--bg2)}.b-gray::before{background:var(--txt3)}
+
+/* ─── RANKING ─── */
+.rank-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.rank-row:last-child{border-bottom:none}
+.rank-num{font-family:var(--mono);font-size:11px;color:var(--txt3);width:18px;text-align:center;flex-shrink:0;font-weight:600}
+.rank-av{width:32px;height:32px;border-radius:8px;background:var(--orange-bg);border:1px solid var(--orange-br);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--orange);flex-shrink:0}
+.rank-name{flex:1;font-size:13px;font-weight:500;letter-spacing:-.1px}
+.rank-bar-wrap{width:90px}
+.rank-bar-bg{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.rank-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.rank-cnt{font-family:var(--mono);font-size:10px;color:var(--txt3);min-width:50px;text-align:right;font-weight:500}
+
+/* ─── FILTER BAR ─── */
+.filter-bar{display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0;flex-wrap:wrap}
+.flt-btn{padding:4px 11px;border-radius:20px;font-family:var(--mono);font-size:9px;cursor:pointer;border:1px solid var(--border);color:var(--txt3);background:var(--surface);transition:.12s;white-space:nowrap;font-weight:500}
+.flt-btn:hover{border-color:var(--border2);color:var(--txt2)}
+.flt-btn.on{border-color:var(--orange-br);color:var(--orange);background:var(--orange-bg);font-weight:600}
+
+/* ─── MODALS ─── */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px)}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow3)}
+.modal-hd{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.modal-title{font-size:14px;font-weight:600;color:var(--txt);letter-spacing:-.2px}
+.modal-x{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;line-height:1;padding:3px 6px;border-radius:var(--r);transition:.1s}
+.modal-x:hover{background:var(--bg);color:var(--txt)}
+.modal-bd{padding:20px 22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--surface2)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg-full{grid-column:1/-1}
+.f-group{display:flex;flex-direction:column;gap:5px}
+.f-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;font-weight:600}
+.f-inp,.f-sel,.f-ta{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-size:13px;color:var(--txt);font-family:var(--sans);outline:none;transition:.15s}
+.f-inp:focus,.f-sel:focus,.f-ta:focus{border-color:var(--orange);background:var(--surface);box-shadow:0 0 0 3px rgba(234,88,12,.08)}
+.f-ta{resize:vertical;min-height:70px}
+
+/* inline bevestiging */
+.confirm-inline{display:none;background:var(--red-bg);border:1px solid var(--red-br);border-radius:var(--r);padding:8px 12px;margin-top:6px;gap:8px;align-items:center;font-size:12px;color:var(--red)}
+.confirm-inline.open{display:flex}
+.confirm-inline strong{flex:1}
+
+/* ─── SQL MODAL ─── */
+.sql-pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:10px;line-height:1.7;color:#1e40af;overflow:auto;white-space:pre;max-height:360px}
+
+/* ─── ACHTERSTAND BANNER ─── */
+.achterstand-banner{background:var(--red-bg);border-bottom:1px solid var(--red-br);padding:10px 18px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--red);flex-shrink:0;flex-wrap:wrap;font-weight:500}
+.achterstand-banner svg{width:14px;height:14px;flex-shrink:0}
+
+/* ─── DATUM MODUS BAR ─── */
+.datum-modus-bar{background:var(--yellow-bg);border-bottom:2px solid var(--yellow-br);padding:8px 18px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--yellow);flex-shrink:0;flex-wrap:wrap;font-weight:500}
+.datum-modus-bar strong{font-weight:700}
+.datum-mode-picker{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.dm-date-inp{padding:4px 9px;border:1px solid var(--yellow-br);border-radius:var(--r);font-size:12px;font-family:var(--mono);color:var(--txt);background:var(--surface);outline:none;cursor:pointer}
+.dm-date-inp:focus{border-color:var(--yellow)}
+
+/* ─── TOAST ─── */
+.toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column-reverse;gap:7px;z-index:200}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:11px 16px;font-size:12px;display:flex;align-items:center;gap:8px;min-width:220px;box-shadow:var(--shadow3);animation:tin .22s ease;font-weight:500}
+.toast.s{border-left:4px solid var(--green)}.toast.e{border-left:4px solid var(--red)}.toast.i{border-left:4px solid var(--blue)}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── PG HEADER ─── */
+.pg-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;box-shadow:var(--shadow);flex-wrap:wrap;gap:8px}
+.pg-hd-title{font-size:15px;font-weight:600;color:var(--txt);letter-spacing:-.2px}
+.pg-hd-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* ─── HISTORIEK DETAIL PANEL ─── */
+.hist-detail-panel{display:none;border-top:2px solid var(--orange-br);background:var(--surface2)}
+.hist-detail-panel.open{display:block;animation:fadeIn .18s ease}
+.detail-edit-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.detail-edit-inp{padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--mono);color:var(--txt);background:var(--surface);outline:none;width:80px}
+.detail-edit-inp:focus{border-color:var(--orange)}
+.detail-edit-sel{padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:var(--sans);color:var(--txt);background:var(--surface);outline:none;min-width:120px}
+.detail-edit-sel:focus{border-color:var(--orange)}
+
+/* ─── DAG CORRIGEREN MODAL ─── */
+.corr-task-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.corr-task-row:last-child{border-bottom:none}
+.corr-chk{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;cursor:pointer;accent-color:var(--green)}
+.corr-name{flex:1;font-size:12px;font-weight:500}
+.corr-inp{padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--mono);color:var(--txt);background:var(--bg);outline:none;width:75px}
+.corr-inp:focus{border-color:var(--orange)}
+.corr-sel{padding:4px 7px;border:1px solid var(--border);border-radius:var(--r);font-size:11px;font-family:var(--sans);color:var(--txt);background:var(--bg);outline:none;min-width:110px}
+.corr-sel:focus{border-color:var(--orange)}
+
+
+/* ─── RAPPORTEN / PDF ─── */
+.report-controls{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:12px;align-items:end}
+.report-controls .f-group{margin:0}
+.report-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.report-preview{display:flex;flex-direction:column;gap:16px;min-height:120px}
+.report-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.report-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;box-shadow:var(--shadow);transition:box-shadow .15s;position:relative;overflow:hidden}
+.report-kpi:hover{box-shadow:var(--shadow2)}
+.report-kpi-label{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px;font-weight:600}
+.report-kpi-value{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--txt);letter-spacing:-1px}
+.report-kpi-value.good{color:var(--green)}.report-kpi-value.warn{color:var(--yellow)}.report-kpi-value.bad{color:var(--red)}
+.report-kpi-sub{font-size:11px;color:var(--txt3);margin-top:4px;line-height:1.4}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.report-mini-table{width:100%;border-collapse:collapse}
+.report-mini-table th{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:600}
+.report-mini-table td{padding:9px 12px;font-size:11px;border-bottom:1px solid var(--border);color:var(--txt)}
+.report-mini-table tr:last-child td{border-bottom:none}
+.report-mini-table tr:hover td{background:var(--bg)}
+.report-chart-img{width:100%;border:1px solid var(--border);border-radius:var(--r);background:#fff;display:block}
+.report-muted{font-size:11px;color:var(--txt3);line-height:1.5}
+.rpt-loading{display:flex;align-items:center;gap:10px;padding:24px;color:var(--txt3);font-size:13px;font-family:var(--mono)}
+.rpt-loading::before{content:'';width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.report-controls{grid-template-columns:1fr 1fr}.report-kpis{grid-template-columns:1fr 1fr}.report-grid{grid-template-columns:1fr}}
+.report-note{background:var(--blue-bg);border:1px solid var(--blue-br);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--blue);line-height:1.5}
+.report-note strong{font-weight:700}
+
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:700px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:50;transform:translateX(-100%);width:240px}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger{display:flex}
+  .score-row{grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+  .dash-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .fg-full{grid-column:1}
+  .sidebar-overlay{display:block}
+  .cl-topbar{gap:6px}
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup" style="min-height:100vh;display:none;align-items:center;justify-content:center;background:var(--bg);padding:24px">
+  <div class="setup-box">
+    <div class="setup-top">
+      <div class="setup-tag">ST·OPS v6.9</div>
+      <div class="setup-h">Verbinding instellen</div>
+      <div class="setup-sub">Koppel je Supabase database. Dit is éénmalig — gegevens worden lokaal bewaard.</div>
+    </div>
+    <div class="setup-body">
+      <div class="info-box">Nog geen Supabase? Ga naar <strong>supabase.com</strong> → maak een gratis project → kopieer URL en Anon Key via <em>Settings → API</em>.</div>
+      <div class="step-card"><div class="step-lbl">Stap 01 — Tabellen aanmaken</div><div class="step-txt">Open <code>SQL Editor</code> in Supabase, klik "SQL Script bekijken" hieronder, plak en voer uit.</div></div>
+      <div class="step-card"><div class="step-lbl">Stap 02 — API sleutels invullen</div><div class="step-txt">Ga naar <code>Settings → API</code> en kopieer <code>Project URL</code> en <code>anon public</code>.</div></div>
+      <div class="fl"><label>Supabase Project URL</label><input id="sb-url" class="fi" type="url" placeholder="https://xxxxxxxx.supabase.co"></div>
+      <div class="fl"><label>Supabase Anon Key</label><input id="sb-key" class="fi" type="text" placeholder="eyJhbGci..."></div>
+      <div class="btns">
+        <button class="btn btn-ghost" onclick="showSql()">SQL Script bekijken</button>
+        <button class="btn btn-primary" onclick="doConnect()" style="flex:1">Verbinden en starten →</button>
+      </div>
+      <div class="setup-err" id="setup-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="shell" style="display:none">
+  <div class="sidebar-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="s-logo">
+      <div class="s-logo-mark"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5.5,10.5 12,3"/></svg></div>
+      <div><div class="s-logo-name">ST·OPS</div><div class="s-logo-sub">Stock Team v6.9</div></div>
+    </div>
+    <nav>
+      <div class="nav-sep">Overzicht</div>
+      <button class="nav-item active" data-pg="dashboard" onclick="goPage('dashboard',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="8.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="8.5" width="5" height="5" rx="1"/><rect x="8.5" y="8.5" width="5" height="5" rx="1"/></svg>
+        Dashboard
+      </button>
+      <div class="nav-sep">Checklists</div>
+      <button class="nav-item" data-pg="dagelijks" onclick="goPage('dagelijks',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 4.5v3l2 1.5" stroke-linecap="round"/></svg>
+        Dagelijks<span class="nav-badge" id="nb-dag"></span>
+      </button>
+      <button class="nav-item" data-pg="wekelijks" onclick="goPage('wekelijks',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="12" height="10" rx="1"/><path d="M4.5 1.5v3M10.5 1.5v3M1.5 7h12" stroke-linecap="round"/></svg>
+        Wekelijks<span class="nav-badge" id="nb-week"></span>
+      </button>
+      <button class="nav-item" data-pg="maandelijks" onclick="goPage('maandelijks',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="12" height="10" rx="1"/><path d="M4.5 1.5v3M10.5 1.5v3M1.5 7h12M4 10h2M9 10h2" stroke-linecap="round"/></svg>
+        Maandelijks<span class="nav-badge" id="nb-mnd"></span>
+      </button>
+      <button class="nav-item" data-pg="indiennodig" onclick="goPage('indiennodig',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 5v3M7.5 10v.5" stroke-linecap="round"/></svg>
+        Indien nodig
+      </button>
+      <div class="nav-sep">Beheer</div>
+      <button class="nav-item" data-pg="taken" onclick="goPage('taken',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 4h10M2.5 7.5h7M2.5 11h5" stroke-linecap="round"/></svg>
+        Takenbeheer
+      </button>
+      <button class="nav-item" data-pg="historiek" onclick="goPage('historiek',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1.5 12L4.5 8l3 2 3-4.5 3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Historiek
+      </button>
+      <button class="nav-item" data-pg="rapporten" onclick="goPage('rapporten',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 1.5h6l3 3V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2.5a1 1 0 0 1 1-1z"/><path d="M9 1.5V5h3M4.5 8.5h6M4.5 11h4" stroke-linecap="round"/></svg>
+        Rapporten
+      </button>
+      <button class="nav-item" data-pg="team" onclick="goPage('team',this)">
+        <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="6" cy="5" r="2.5"/><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/><circle cx="11" cy="4.5" r="1.8"/><path d="M13.5 12c0-1.8-1-3-2.5-3" stroke-linecap="round"/></svg>
+        Team
+      </button>
+    </nav>
+    <div class="s-footer">
+      <div class="conn-row"><div class="conn-dot" id="conn-dot"></div><span id="conn-txt" style="font-family:var(--mono);font-size:9px">Verbinden...</span></div>
+      <button class="s-btn" onclick="resetConn()">⚙ Instellingen</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="openSidebar()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button>
+      <div class="page-title" id="pg-title">Dashboard</div>
+      <div class="topbar-right">
+        <!-- Actieve gebruiker pill -->
+        <div class="user-pill" onclick="openUserModal()" title="Actieve gebruiker wijzigen">
+          <div class="user-pill-av" id="user-av">?</div>
+          <span id="user-name-pill">Kies naam</span>
+        </div>
+        <div class="top-pill orange" id="tb-date">—</div>
+        <div class="top-pill" id="tb-week">—</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard" style="overflow-y:auto">
+      <div id="achterstand-banner" class="achterstand-banner" style="display:none">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1 12h12L7 1z"/><path d="M7 5v4M7 10v.5"/></svg>
+        <span id="achterstand-txt"></span>
+        <button class="btn btn-danger btn-xs" id="achterstand-btn" onclick="openCorrModal(null,'Dagelijks')" style="margin-left:auto">Dag corrigeren →</button>
+      </div>
+      <div class="score-row" id="score-row">
+        <div class="sc"><div class="sc-accent" style="background:var(--orange)"></div><div class="sc-label">Vandaag · Dagelijks</div><div class="sc-val none" id="sv-dag">—</div><div class="sc-sub" id="ss-dag">laden...</div><div class="sc-bar"><div class="sc-bar-fill" id="sb-dag" style="width:0;background:var(--orange)"></div></div><div class="sc-uren" id="su-dag"></div></div>
+        <div class="sc"><div class="sc-accent" style="background:var(--blue)"></div><div class="sc-label">Deze week · Wekelijks</div><div class="sc-val none" id="sv-week">—</div><div class="sc-sub" id="ss-week">laden...</div><div class="sc-bar"><div class="sc-bar-fill" id="sb-week" style="width:0;background:var(--blue)"></div></div></div>
+        <div class="sc"><div class="sc-accent" style="background:var(--green)"></div><div class="sc-label">Deze maand · Maandelijks</div><div class="sc-val none" id="sv-mnd">—</div><div class="sc-sub" id="ss-mnd">laden...</div><div class="sc-bar"><div class="sc-bar-fill" id="sb-mnd" style="width:0;background:var(--green)"></div></div></div>
+        <div class="sc"><div class="sc-accent" style="background:linear-gradient(90deg,var(--orange),var(--blue),var(--green))"></div><div class="sc-label">Totaal · Alle types</div><div class="sc-val none" id="sv-tot">—</div><div class="sc-sub" id="ss-tot">laden...</div><div class="sc-bar"><div class="sc-bar-fill" id="sb-tot" style="width:0;background:var(--orange)"></div></div><div class="sc-uren" id="su-tot"></div></div>
+      </div>
+      <div class="dash-body">
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Openstaande taken vandaag</div><button class="btn btn-ghost btn-xs" onclick="goPage('dagelijks',document.querySelector('[data-pg=dagelijks]'))">Ga naar checklist →</button></div>
+            <div id="dash-open"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Ranking vandaag</div></div>
+            <div id="dash-rank"></div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Status nu</div></div>
+            <div class="card-body" id="dash-status" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Snelkoppelingen</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="goPage('dagelijks',document.querySelector('[data-pg=dagelijks]'))">→ Dagelijkse checklist</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="openCorrModal(null,'Dagelijks')">→ Taken corrigeren / retroactief invoeren</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="goPage('historiek',document.querySelector('[data-pg=historiek]'))">→ Historiek bekijken</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="goPage('rapporten',document.querySelector('[data-pg=rapporten]'))">→ PDF rapport maken</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start" onclick="goPage('team',document.querySelector('[data-pg=team]'))">→ Team & scores</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAGELIJKS -->
+    <div class="page" id="pg-dagelijks">
+      <div class="cl-topbar">
+        <div class="cl-type-pill dag">Dagelijks</div>
+        <div class="cl-progress">
+          <div class="cl-bar-outer"><div class="cl-bar-inner" id="clb-dag" style="width:0;background:var(--orange)"></div></div>
+          <div class="cl-frac" id="clf-dag">0/0</div>
+        </div>
+        <div class="cl-pct" id="clp-dag">0%</div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleDatumModus('dag')">📅 Andere dag</button>
+        <button class="btn btn-ghost btn-sm" onclick="openCorrModal(null,'Dagelijks')">🔧 Corrigeren</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetFreq('Dagelijks')">Reset</button>
+      </div>
+      <div class="datum-modus-bar" id="dmb-dag" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1 12h12L7 1z"/><path d="M7 5v3M7 9.5v.5"/></svg>
+        <strong>Datum-modus:</strong> je bekijkt/bewerkt een andere dag
+        <div class="datum-mode-picker">
+          <input type="date" class="dm-date-inp" id="dm-dag-date" onchange="loadDatumModus('dag')">
+          <button class="btn btn-ghost btn-xs" onclick="exitDatumModus('dag')">← Terug naar vandaag</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <div class="search-inner">
+          <svg class="search-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3" stroke-linecap="round"/></svg>
+          <input class="search-input" id="srch-dag" placeholder="Zoek op naam of taak-ID..." oninput="renderCL('Dagelijks')">
+          <button class="search-clear" onclick="document.getElementById('srch-dag').value='';renderCL('Dagelijks')">×</button>
+        </div>
+      </div>
+      <div class="task-list" id="tl-dag"></div>
+    </div>
+
+    <!-- WEKELIJKS -->
+    <div class="page" id="pg-wekelijks">
+      <div class="cl-topbar">
+        <div class="cl-type-pill week">Wekelijks</div>
+        <div class="cl-progress">
+          <div class="cl-bar-outer"><div class="cl-bar-inner" id="clb-week" style="width:0;background:var(--blue)"></div></div>
+          <div class="cl-frac" id="clf-week">0/0</div>
+        </div>
+        <div class="cl-pct" id="clp-week">0%</div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleDatumModus('week')">📅 Andere week</button>
+        <button class="btn btn-ghost btn-sm" onclick="openCorrModal(null,'Wekelijks')">🔧 Corrigeren</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetFreq('Wekelijks')">Reset</button>
+      </div>
+      <div class="datum-modus-bar" id="dmb-week" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1 12h12L7 1z"/><path d="M7 5v3M7 9.5v.5"/></svg>
+        <strong>Week-modus:</strong> je bekijkt/bewerkt een andere week
+        <div class="datum-mode-picker">
+          <input type="date" class="dm-date-inp" id="dm-week-date" onchange="loadDatumModus('week')">
+          <button class="btn btn-ghost btn-xs" onclick="exitDatumModus('week')">← Terug naar deze week</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <div class="search-inner">
+          <svg class="search-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3" stroke-linecap="round"/></svg>
+          <input class="search-input" id="srch-week" placeholder="Zoek op naam of taak-ID..." oninput="renderCL('Wekelijks')">
+          <button class="search-clear" onclick="document.getElementById('srch-week').value='';renderCL('Wekelijks')">×</button>
+        </div>
+      </div>
+      <div class="task-list" id="tl-week"></div>
+    </div>
+
+    <!-- MAANDELIJKS -->
+    <div class="page" id="pg-maandelijks">
+      <div class="cl-topbar">
+        <div class="cl-type-pill mnd">Maandelijks</div>
+        <div class="cl-progress">
+          <div class="cl-bar-outer"><div class="cl-bar-inner" id="clb-mnd" style="width:0;background:var(--green)"></div></div>
+          <div class="cl-frac" id="clf-mnd">0/0</div>
+        </div>
+        <div class="cl-pct" id="clp-mnd">0%</div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleDatumModus('mnd')">📅 Andere maand</button>
+        <button class="btn btn-ghost btn-sm" onclick="openCorrModal(null,'Maandelijks')">🔧 Corrigeren</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetFreq('Maandelijks')">Reset</button>
+      </div>
+      <div class="datum-modus-bar" id="dmb-mnd" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1 12h12L7 1z"/><path d="M7 5v3M7 9.5v.5"/></svg>
+        <strong>Maand-modus:</strong> je bekijkt/bewerkt een andere maand
+        <div class="datum-mode-picker">
+          <input type="month" class="dm-date-inp" id="dm-mnd-month" onchange="loadDatumModus('mnd')">
+          <button class="btn btn-ghost btn-xs" onclick="exitDatumModus('mnd')">← Terug naar deze maand</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <div class="search-inner">
+          <svg class="search-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3" stroke-linecap="round"/></svg>
+          <input class="search-input" id="srch-mnd" placeholder="Zoek op naam of taak-ID..." oninput="renderCL('Maandelijks')">
+          <button class="search-clear" onclick="document.getElementById('srch-mnd').value='';renderCL('Maandelijks')">×</button>
+        </div>
+      </div>
+      <div class="task-list" id="tl-mnd"></div>
+    </div>
+
+    <!-- INDIEN NODIG -->
+    <div class="page" id="pg-indiennodig">
+      <div class="cl-topbar">
+        <div class="cl-type-pill nodig">Indien nodig</div>
+        <span style="font-size:11px;color:var(--txt3)">Voer uit wanneer van toepassing — telt niet mee in score</span>
+        <button class="btn btn-ghost btn-sm" onclick="toggleDatumModus('nodig')" style="margin-left:auto">📅 Andere dag</button>
+        <button class="btn btn-ghost btn-sm" onclick="openCorrModal(null,'Indien nodig')">🔧 Corrigeren</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetFreq('Indien nodig')">Reset</button>
+      </div>
+      <div class="datum-modus-bar" id="dmb-nodig" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1L1 12h12L7 1z"/><path d="M7 5v3M7 9.5v.5"/></svg>
+        <strong>Datum-modus:</strong> je bekijkt/bewerkt indien-nodig taken voor een andere dag
+        <div class="datum-mode-picker">
+          <input type="date" class="dm-date-inp" id="dm-nodig-date" onchange="loadDatumModus('nodig')">
+          <button class="btn btn-ghost btn-xs" onclick="exitDatumModus('nodig')">← Terug naar vandaag</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <div class="search-inner">
+          <svg class="search-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3" stroke-linecap="round"/></svg>
+          <input class="search-input" id="srch-nodig" placeholder="Zoek op naam of taak-ID..." oninput="renderCL('Indien nodig')">
+          <button class="search-clear" onclick="document.getElementById('srch-nodig').value='';renderCL('Indien nodig')">×</button>
+        </div>
+      </div>
+      <div class="task-list" id="tl-nodig"></div>
+    </div>
+
+    <!-- TAKENBEHEER -->
+    <div class="page" id="pg-taken">
+      <div class="pg-hd">
+        <div><div class="pg-hd-title">Takenbeheer</div><div class="pg-hd-sub" id="taken-sub">Alle taken</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openTaakModal()">+ Nieuwe taak</button>
+      </div>
+      <div class="filter-bar">
+        <button class="flt-btn on" id="fb-all" onclick="filterT('all',this)">Alle taken</button>
+        <button class="flt-btn" id="fb-Dagelijks" onclick="filterT('Dagelijks',this)">Dagelijks</button>
+        <button class="flt-btn" id="fb-Wekelijks" onclick="filterT('Wekelijks',this)">Wekelijks</button>
+        <button class="flt-btn" id="fb-Maandelijks" onclick="filterT('Maandelijks',this)">Maandelijks</button>
+        <button class="flt-btn" id="fb-Indiennodig" onclick="filterT('Indien nodig',this)">Indien nodig</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Naam</th><th>Type</th><th>Verantwoordelijke</th><th>Prioriteit</th><th>Actief</th><th style="width:100px"></th></tr></thead>
+          <tbody id="t-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORIEK -->
+    <div class="page" id="pg-historiek">
+      <div class="pg-hd">
+        <div><div class="pg-hd-title">Historiek</div><div class="pg-hd-sub">Score per dag, week en maand — klik op een rij voor detail + aanpassen</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="openCorrModal(null,'Dagelijks')">🔧 Dag corrigeren</button>
+      </div>
+      <div class="filter-bar" style="align-items:center;flex-wrap:wrap;gap:6px">
+        <button class="flt-btn on" id="ht-dag" onclick="switchHistTab('dag',this)">Per dag</button>
+        <button class="flt-btn" id="ht-week" onclick="switchHistTab('week',this)">Per week</button>
+        <button class="flt-btn" id="ht-mnd" onclick="switchHistTab('mnd',this)">Per maand</button>
+        <select id="hist-persoon" class="f-sel" style="width:140px;padding:5px 8px;font-size:12px;margin-left:8px" onchange="loadHistTab()">
+          <option value="">Alle personen</option>
+        </select>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--txt3)">Van</span>
+          <input type="date" id="hist-van" class="f-inp" style="width:130px;padding:5px 8px" onchange="loadHistTab()">
+          <span style="font-size:11px;color:var(--txt3)">tot</span>
+          <input type="date" id="hist-tot" class="f-inp" style="width:130px;padding:5px 8px" onchange="loadHistTab()">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">↓ CSV</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead id="hist-thead"></thead>
+          <tbody id="h-tbody"></tbody>
+        </table>
+      </div>
+      <!-- DETAIL PANEL -->
+      <div id="hist-detail" class="hist-detail-panel">
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap">
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3)" id="detail-title">Detail</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-primary btn-xs" onclick="openCorrFromDetail()">+ Afvinken voor deze periode</button>
+            <button class="btn btn-ghost btn-xs" onclick="document.getElementById('hist-detail').classList.remove('open')">Sluiten ×</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="max-height:320px;overflow-y:auto">
+          <table>
+            <thead><tr><th>Taak</th><th>Gedaan</th><th>Uitvoerder</th><th>Duur</th><th>Tijdstip</th><th style="width:160px">Acties</th></tr></thead>
+            <tbody id="detail-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- RAPPORTEN -->
+    <div class="page" id="pg-rapporten" style="overflow-y:auto">
+      <div class="pg-hd">
+        <div><div class="pg-hd-title">PDF Rapporten</div><div class="pg-hd-sub">Selecteer een periode. Uren worden geboekt op de werkdatum, ook wanneer de taak wekelijks of maandelijks is</div></div>
+      </div>
+      <div class="dash-body" style="padding-top:18px">
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Rapport samenstellen</div></div>
+          <div class="card-body">
+            <div class="report-controls">
+              <div class="f-group">
+                <label class="f-lbl">Type rapport</label>
+                <select id="rpt-mode" class="f-sel" onchange="rptUpdateMode()">
+                  <option value="dag">Dagrapport</option>
+                  <option value="week" selected>Weekrapport</option>
+                  <option value="maand">Maandrapport</option>
+                  <option value="periode">Vrije periode</option>
+                </select>
+              </div>
+              <div class="f-group rpt-field" data-rpt-field="date">
+                <label class="f-lbl" id="rpt-date-lbl">Datum</label>
+                <input type="date" id="rpt-date" class="f-inp">
+              </div>
+              <div class="f-group rpt-field" data-rpt-field="month" style="display:none">
+                <label class="f-lbl">Maand</label>
+                <input type="month" id="rpt-month" class="f-inp">
+              </div>
+              <div class="f-group rpt-field" data-rpt-field="van" style="display:none">
+                <label class="f-lbl">Van</label>
+                <input type="date" id="rpt-van" class="f-inp">
+              </div>
+              <div class="f-group rpt-field" data-rpt-field="tot" style="display:none">
+                <label class="f-lbl">Tot</label>
+                <input type="date" id="rpt-tot" class="f-inp">
+              </div>
+            </div>
+            <div class="report-actions">
+              <button class="btn btn-ghost" onclick="renderReportPreview()">↻ Voorbeeld tonen</button>
+              <button class="btn btn-primary" onclick="downloadReportPdf()">↓ PDF downloaden</button>
+              <span class="report-muted">Dagrapport toont alle uren van die werkdag, inclusief wekelijkse/maandelijkse taken.</span>
+            </div>
+          </div>
+        </div>
+        <div id="rpt-preview" class="report-preview">
+          <div class="empty-state"><div class="empty-txt">Kies een periode en klik op “Voorbeeld tonen”.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="page" id="pg-team" style="overflow-y:auto">
+      <div class="pg-hd">
+        <div><div class="pg-hd-title">Team & Scores</div><div class="pg-hd-sub">Prestaties per persoon</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openTeamModal()">+ Teamlid</button>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Capaciteitsbenutting vandaag</div><span class="report-muted">Norm: 7,4u per persoon = 444 min</span></div>
+          <div class="card-body" id="team-capacity"></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Gedaan vandaag — per persoon</div></div>
+            <div id="team-today"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Teamleden</div></div>
+            <div id="team-members"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- SQL -->
+<div class="overlay" id="sql-ov">
+  <div class="modal" style="width:660px">
+    <div class="modal-hd"><div class="modal-title">SQL Script — plak in Supabase SQL Editor</div><button class="modal-x" onclick="closeOv('sql-ov')">×</button></div>
+    <div class="modal-bd"><pre class="sql-pre" id="sql-pre"></pre><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="copySql()">Kopiëren naar klembord</button></div>
+  </div>
+</div>
+
+<!-- TAAK -->
+<div class="overlay" id="taak-ov">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="taak-ov-title">Nieuwe taak</div><button class="modal-x" onclick="closeOv('taak-ov')">×</button></div>
+    <div class="modal-bd">
+      <div class="form-grid">
+        <div class="f-group"><label class="f-lbl">Taak-ID</label><input id="fi-id" class="f-inp" placeholder="STNE 001"></div>
+        <div class="f-group"><label class="f-lbl">Frequentie</label><select id="fi-freq" class="f-sel"><option>Dagelijks</option><option>Wekelijks</option><option>Maandelijks</option><option>Indien nodig</option><option>Jaarlijks</option></select></div>
+        <div class="f-group fg-full"><label class="f-lbl">Naam</label><input id="fi-naam" class="f-inp" placeholder="Naam van de taak"></div>
+        <div class="f-group fg-full"><label class="f-lbl">Omschrijving</label><textarea id="fi-omschr" class="f-ta" placeholder="Wat houdt de taak in?"></textarea></div>
+        <div class="f-group fg-full"><label class="f-lbl">Verantwoordelijke(n)</label><div id="fi-verantw-picker" class="people-picker"></div><input id="fi-verantw" type="hidden"></div>
+        <div class="f-group"><label class="f-lbl">Prioriteit</label><select id="fi-prio" class="f-sel"><option>Normaal</option><option>Hoog</option><option>Laag</option></select></div>
+        <div class="f-group"><label class="f-lbl">Actief</label><select id="fi-actief" class="f-sel"><option value="true">Ja</option><option value="false">Nee</option></select></div>
+      </div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeOv('taak-ov')">Annuleren</button><button class="btn btn-primary" onclick="saveTaak()">Opslaan</button></div>
+  </div>
+</div>
+
+<!-- TEAM LID -->
+<div class="overlay" id="team-ov">
+  <div class="modal" style="width:340px">
+    <div class="modal-hd"><div class="modal-title">Teamlid toevoegen</div><button class="modal-x" onclick="closeOv('team-ov')">×</button></div>
+    <div class="modal-bd"><div class="f-group"><label class="f-lbl">Naam</label><input id="fi-tnaam" class="f-inp" placeholder="Voornaam"></div></div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeOv('team-ov')">Annuleren</button><button class="btn btn-primary" onclick="saveTeamLid()">Toevoegen</button></div>
+  </div>
+</div>
+
+<!-- USER KIEZER -->
+<div class="overlay" id="user-ov">
+  <div class="modal" style="width:360px">
+    <div class="modal-hd"><div class="modal-title">Actieve gebruiker</div><button class="modal-x" onclick="closeOv('user-ov')">×</button></div>
+    <div class="modal-bd">
+      <p style="font-size:12px;color:var(--txt2);margin-bottom:12px">Kies wie je bent. Dit wordt onthouden op dit apparaat en automatisch ingevuld bij het afvinken.</p>
+      <div id="user-list" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeOv('user-ov')">Annuleren</button></div>
+  </div>
+</div>
+
+<!-- TAKEN CORRIGEREN MODAL -->
+<div class="overlay" id="corr-ov">
+  <div class="modal" style="width:880px">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="corr-title">Taken corrigeren / retroactief invoeren</div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:2px" id="corr-subtitle">Kies type en werkdatum. Wekelijkse/maandelijkse taken tellen mee voor hun week/maand, maar uren blijven zichtbaar op deze dag.</div>
+      </div>
+      <button class="modal-x" onclick="closeOv('corr-ov')">×</button>
+    </div>
+    <div class="modal-bd">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <div class="f-group" style="flex:1;min-width:150px">
+          <label class="f-lbl">Type taken</label>
+          <select id="corr-freq" class="f-sel" onchange="loadCorrTasks()">
+            <option>Dagelijks</option>
+            <option>Wekelijks</option>
+            <option>Maandelijks</option>
+            <option>Indien nodig</option>
+          </select>
+        </div>
+        <div class="f-group" style="flex:1;min-width:160px">
+          <label class="f-lbl" id="corr-date-label">Datum / periode</label>
+          <input type="date" id="corr-datum" class="f-inp" onchange="loadCorrTasks()">
+        </div>
+        <div class="f-group" style="flex:1;min-width:160px">
+          <label class="f-lbl">Uitvoerder (standaard)</label>
+          <select id="corr-uitv" class="f-sel"><option value="">— Kies naam —</option></select>
+        </div>
+      </div>
+      <div id="corr-period-hint" class="info-box" style="margin-bottom:12px;display:none"></div>
+      <div id="corr-task-list" style="max-height:430px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:0 14px"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('corr-ov')">Annuleren</button>
+      <button class="btn btn-primary" onclick="saveCorrTasks()">💾 Alles opslaan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- ══ JS ══ -->
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+
+let SB=null;
+let allTaken=[],allLeden=[];
+let dagAf={},weekAf={},mndAf={},nodAf={};
+let editTaakId=null,taakFilter='all';
+let globalUser='';
+let datumModus={dag:null,week:null,mnd:null,nodig:null}; // null = huidige periode, anders gekozen datum/maand
+const PERIOD_MODE_KEY='stops_period_modes_v2';
+const CHECKLIST_DRAFT_KEY='stops_checklist_drafts_v2';
+const CORR_DRAFT_KEY='stops_corr_drafts_v1';
+let checklistDrafts={};
+let corrDrafts={};
+let corrView={freq:null,datum:null};
+let corrSkipCaptureOnClose=false;
+let currentDetailDatum=null;
+let currentDetailContext={type:null,datum:null,week_nr:null,extra:null,label:null};
+
+/* ─── DATE HELPERS ─── */
+const now=new Date();
+const pad=n=>String(n).padStart(2,'0');
+const toS=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayS=toS(now);
+
+function weekNr(d){
+  const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=dt.getUTCDay()||7;
+  dt.setUTCDate(dt.getUTCDate()+4-day);
+  const y1=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return Math.ceil((((dt-y1)/86400000)+1)/7);
+}
+const WK=weekNr(now);
+const maandS=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+function readJsonStore(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||'')||fallback}catch(e){return fallback}}
+function writeJsonStore(key,value){try{localStorage.setItem(key,JSON.stringify(value||{}))}catch(e){console.warn('Kon lokale opslag niet bewaren',e)}}
+function savePeriodModes(){writeJsonStore(PERIOD_MODE_KEY,datumModus)}
+function hydrateStoredPeriodModes(){
+  const saved=readJsonStore(PERIOD_MODE_KEY,{});
+  ['dag','week','mnd','nodig'].forEach(fk=>{
+    const v=saved[fk]||null;
+    datumModus[fk]=v;
+    const bar=document.getElementById('dmb-'+fk);
+    const inp=fk==='mnd'?document.getElementById('dm-mnd-month'):document.getElementById('dm-'+fk+'-date');
+    if(v&&inp){inp.value=v; if(bar)bar.style.display='flex'}
+    else if(inp){inp.value=fk==='mnd'?maandS:todayS; if(bar)bar.style.display='none'}
+  });
+}
+function weekStartS(d){const x=d?new Date(d):new Date(now);const day=x.getDay()||7;x.setDate(x.getDate()-day+1);return toS(x)}
+function weekEndS(d){const x=new Date(weekStartS(d)+'T12:00:00');x.setDate(x.getDate()+7);return toS(x)}
+function isoWeekStartS(year,week){
+  const jan4=new Date(Date.UTC(Number(year),0,4));
+  const jan4Day=jan4.getUTCDay()||7;
+  const monday=new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate()-jan4Day+1+(Number(week)-1)*7);
+  return `${monday.getUTCFullYear()}-${pad(monday.getUTCMonth()+1)}-${pad(monday.getUTCDate())}`;
+}
+function freqFromKey(fk){return{dag:'Dagelijks',week:'Wekelijks',mnd:'Maandelijks',nodig:'Indien nodig'}[fk]||fk}
+function contextForFreq(freq,overrideDatum){
+  let datum=overrideDatum||todayS;
+  if(!overrideDatum){
+    if(freq==='Dagelijks')datum=datumModus.dag||todayS;
+    else if(freq==='Wekelijks')datum=datumModus.week||todayS;
+    else if(freq==='Maandelijks')datum=(datumModus.mnd?datumModus.mnd+'-01':todayS);
+    else if(freq==='Indien nodig')datum=datumModus.nodig||todayS;
+  }
+  if(freq==='Maandelijks'&&/^\d{4}-\d{2}$/.test(datum))datum=datum+'-01';
+  const d=new Date(datum+'T12:00:00');
+  const maand=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  return{datum,week_nr:weekNr(d),weekStart:weekStartS(datum+'T12:00:00'),weekEnd:weekEndS(datum+'T12:00:00'),maand};
+}
+function sameContext(freq,datum){
+  const a=contextForFreq(freq),b=contextForFreq(freq,datum);
+  if(freq==='Dagelijks'||freq==='Indien nodig')return a.datum===b.datum;
+  if(freq==='Wekelijks')return a.week_nr===b.week_nr&&a.weekStart===b.weekStart;
+  if(freq==='Maandelijks')return a.maand===b.maand;
+  return false;
+}
+function corrDatumFromDetail(ctx){
+  if(!ctx)return todayS;
+  if(ctx.type==='dag')return ctx.datum||todayS;
+  if(ctx.type==='week')return isoWeekStartS(ctx.extra,ctx.week_nr);
+  if(ctx.type==='mnd')return (ctx.extra||maandS)+'-01';
+  return todayS;
+}
+function corrFreqFromDetail(ctx){return ctx?.type==='week'?'Wekelijks':ctx?.type==='mnd'?'Maandelijks':'Dagelijks'}
+function periodLabel(freq,datum){
+  const c=contextForFreq(freq,datum);
+  if(freq==='Dagelijks')return new Date(c.datum+'T12:00:00').toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+  if(freq==='Wekelijks')return `week ${c.week_nr} · ${c.weekStart} t/m ${new Date(new Date(c.weekEnd+'T12:00:00')-86400000).toISOString().slice(0,10)}`;
+  if(freq==='Maandelijks')return new Date(c.maand+'-01T12:00:00').toLocaleDateString('nl-BE',{month:'long',year:'numeric'});
+  return new Date(c.datum+'T12:00:00').toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+}
+
+function formatUren(min){
+  if(!min||min<=0)return'';
+  const h=Math.floor(min/60),m=min%60;
+  return(h>0?h+'u ':'')+m+'min';
+}
+
+/* ─── CONCEPTOPSLAG BIJ WISSELEN VAN PERIODE/TAB ─── */
+function loadChecklistDrafts(){checklistDrafts=readJsonStore(CHECKLIST_DRAFT_KEY,{})}
+function saveChecklistDrafts(){writeJsonStore(CHECKLIST_DRAFT_KEY,checklistDrafts)}
+function periodKeyFor(freq,datum=null){
+  const c=contextForFreq(freq,datum||undefined);
+  if(freq==='Dagelijks')return 'dag:'+c.datum;
+  if(freq==='Wekelijks')return 'week:'+c.weekStart;
+  if(freq==='Maandelijks')return 'mnd:'+c.maand;
+  return 'nodig:'+c.datum;
+}
+function draftKeyFor(freq,taakId){return `${freqKey(freq)}|${periodKeyFor(freq)}|${taakId}`}
+function getChecklistDraft(freq,taakId){return checklistDrafts[draftKeyFor(freq,taakId)]||null}
+function clearChecklistDraft(freq,taakId){delete checklistDrafts[draftKeyFor(freq,taakId)];saveChecklistDrafts()}
+function clearChecklistDraftsForFreq(freq){
+  const prefix=freqKey(freq)+'|'+periodKeyFor(freq)+'|';
+  Object.keys(checklistDrafts).forEach(k=>{if(k.startsWith(prefix))delete checklistDrafts[k]});
+  saveChecklistDrafts();
+}
+function hasMeaningfulDraft(freq,taakId,uitvoerder,pm,opmerking,panelOpen=false){
+  const clean=String(opmerking||'').trim();
+  const people=peopleText(uitvoerder);
+  const defaultPeople=globalUser?peopleText([globalUser]):'';
+  const hasMinutes=Object.values(pm||{}).some(v=>(parseInt(v)||0)>0);
+  return panelOpen||!!clean||hasMinutes||!!(people&&people!==defaultPeople)||!!getChecklistDraft(freq,taakId);
+}
+function captureChecklistDraft(freq,taakId){
+  const t=allTaken.find(x=>x.id===taakId);if(!t||t.frequentie!==freq)return;
+  if(afMapFor(freq)[taakId]?.gedaan)return;
+  const panel=document.getElementById('panel-'+taakId);
+  const opm=document.getElementById('tps-opm-'+taakId)?.value||'';
+  const uitvoerder=getPeopleFromPicker('do-'+taakId);
+  const pm=getPersonMinutesFromBox('pd-do-'+taakId);
+  const open=!!panel?.classList.contains('open');
+  const key=draftKeyFor(freq,taakId);
+  if(hasMeaningfulDraft(freq,taakId,uitvoerder,pm,opm,open)){
+    checklistDrafts[key]={uitvoerder:peopleText(uitvoerder),person_minutes:pm||{},opmerking:opm,updated_at:new Date().toISOString()};
+  }else delete checklistDrafts[key];
+  saveChecklistDrafts();
+}
+function snapshotChecklistDrafts(){
+  (allTaken||[]).forEach(t=>{
+    if(!document.getElementById('panel-'+t.id))return;
+    if(afMapFor(t.frequentie)[t.id]?.gedaan)return;
+    captureChecklistDraft(t.frequentie,t.id);
+  });
+}
+function scheduleCaptureDraftFromEvent(e){
+  const el=e.target;if(!el)return;
+  let taakId='';
+  if(el.id?.startsWith('tps-opm-'))taakId=el.id.replace('tps-opm-','');
+  const box=el.closest?.('.person-duration-box[id^="pd-do-"]');
+  if(box)taakId=box.id.replace('pd-do-','');
+  const picker=el.closest?.('.people-picker[data-pick^="do-"]');
+  if(picker)taakId=picker.dataset.pick.replace('do-','');
+  if(!taakId)return;
+  setTimeout(()=>{const t=allTaken.find(x=>x.id===taakId);if(t)captureChecklistDraft(t.frequentie,taakId)},0);
+}
+document.addEventListener('input',scheduleCaptureDraftFromEvent,true);
+document.addEventListener('change',scheduleCaptureDraftFromEvent,true);
+loadChecklistDrafts();
+
+/* ─── CONCEPTOPSLAG TAKEN CORRIGEREN MODAL ─── */
+function loadCorrDrafts(){corrDrafts=readJsonStore(CORR_DRAFT_KEY,{})}
+function saveCorrDrafts(){writeJsonStore(CORR_DRAFT_KEY,corrDrafts)}
+function corrPeriodKey(freq,datum){
+  const c=contextForFreq(freq,datum||undefined);
+  if(freq==='Dagelijks')return 'dag:'+c.datum;
+  if(freq==='Wekelijks')return 'week:'+c.weekStart;
+  if(freq==='Maandelijks')return 'mnd:'+c.maand;
+  return 'nodig:'+c.datum;
+}
+function corrDraftKeyFor(freq,datum,taakId){return `${freqKey(freq)}|${corrPeriodKey(freq,datum)}|${taakId}`}
+function getCorrDraft(freq,datum,taakId){return corrDrafts[corrDraftKeyFor(freq,datum,taakId)]||null}
+function clearCorrDraft(freq,datum,taakId){delete corrDrafts[corrDraftKeyFor(freq,datum,taakId)];saveCorrDrafts()}
+function clearCorrDraftsForContext(freq,datum){
+  const prefix=freqKey(freq)+'|'+corrPeriodKey(freq,datum)+'|';
+  Object.keys(corrDrafts).forEach(k=>{if(k.startsWith(prefix))delete corrDrafts[k]});
+  saveCorrDrafts();
+}
+function captureCorrDraftForTask(freq,datum,taakId){
+  const taak=allTaken.find(x=>x.id===taakId);
+  if(!taak||taak.frequentie!==freq)return;
+  const key=corrDraftKeyFor(freq,datum,taakId);
+  const checked=!!document.getElementById('cchk-'+taakId)?.checked;
+  const people=getPeopleFromPicker('corr-'+taakId);
+  const pm=getPersonMinutesFromBox('pd-corr-'+taakId);
+  const hasPm=Object.values(pm||{}).some(v=>(parseInt(v)||0)>0);
+  const hasPeople=!!String(people||'').trim();
+  if(checked||hasPeople||hasPm){
+    corrDrafts[key]={gedaan:checked,uitvoerder:people||'',person_minutes:pm||{},updated_at:new Date().toISOString()};
+  }else delete corrDrafts[key];
+  saveCorrDrafts();
+}
+function captureCorrDraftsForCurrentView(){
+  if(!corrView?.freq||!corrView?.datum)return;
+  allTaken.filter(t=>t.frequentie===corrView.freq).forEach(t=>{
+    if(document.getElementById('crow-'+t.id))captureCorrDraftForTask(corrView.freq,corrView.datum,t.id);
+  });
+}
+function scheduleCorrDraftCapture(e){
+  const ov=document.getElementById('corr-ov');
+  if(!ov?.classList.contains('open'))return;
+  const el=e.target;if(!el)return;
+  let taakId='';
+  if(el.id?.startsWith('cchk-'))taakId=el.id.replace('cchk-','');
+  const crow=el.closest?.('.corr-task-row[id^="crow-"]');
+  if(crow)taakId=crow.id.replace('crow-','');
+  const box=el.closest?.('.person-duration-box[id^="pd-corr-"]');
+  if(box)taakId=box.id.replace('pd-corr-','');
+  const picker=el.closest?.('.people-picker[data-pick^="corr-"]');
+  if(picker)taakId=picker.dataset.pick.replace('corr-','');
+  if(!taakId||!corrView?.freq||!corrView?.datum)return;
+  setTimeout(()=>captureCorrDraftForTask(corrView.freq,corrView.datum,taakId),0);
+}
+document.addEventListener('input',scheduleCorrDraftCapture,true);
+document.addEventListener('change',scheduleCorrDraftCapture,true);
+window.addEventListener('beforeunload',captureCorrDraftsForCurrentView);
+loadCorrDrafts();
+
+/* ─── CAPACITEITSBENUTTING ─── */
+const WORKDAY_TARGET_MIN=444; // 7,4u = 7u24 = 444 minuten per persoon per werkdag
+function workdayCountBetween(van,tot){
+  return daysBetween(van,tot).filter(ds=>{const d=new Date(ds+'T12:00:00').getDay();return d>=1&&d<=5}).length;
+}
+function capacityPct(used,target){return target>0?Math.round((used/target)*100):0}
+function capacityCls(p){return p>=95?'good':p>=80?'warn':'bad'}
+function capacityRowsCurrentToday(){
+  return [...Object.values(dagAf),...Object.values(weekAf),...Object.values(mndAf),...Object.values(nodAf)]
+    .filter(a=>a&&a.gedaan&&a.datum===todayS);
+}
+function addCapacityUsage(usage,a){
+  const pm=recordPersonMinutes(a);
+  const entries=Object.entries(pm).filter(([,m])=>parseInt(m)>0);
+  if(entries.length){entries.forEach(([p,m])=>usage[p]=(usage[p]||0)+(parseInt(m)||0));return}
+  const persons=peopleList(a?.uitvoerder);
+  const dur=recordDuration(a)||0;
+  if(!persons.length||!dur)return;
+  if(persons.length===1){usage[persons[0]]=(usage[persons[0]]||0)+dur;return}
+  // Oude records zonder aparte minuten: verdeel indicatief gelijk, zodat de benutting niet verdwijnt.
+  const part=Math.round(dur/persons.length);
+  persons.forEach(p=>usage[p]=(usage[p]||0)+part);
+}
+function buildCapacityStats(rows,days=1){
+  const active=allLeden.filter(l=>l.actief!==false).map(l=>l.naam);
+  const usage={};active.forEach(n=>usage[n]=0);
+  (rows||[]).filter(a=>a&&a.gedaan).forEach(a=>addCapacityUsage(usage,a));
+  const people=uniqPeople([...active,...Object.keys(usage)]);
+  const targetPerPerson=WORKDAY_TARGET_MIN*Math.max(1,days||1);
+  const list=people.map(naam=>{
+    const used=usage[naam]||0;
+    const pct=capacityPct(used,targetPerPerson);
+    return{naam,used,target:targetPerPerson,pct,remaining:Math.max(0,targetPerPerson-used),over:Math.max(0,used-targetPerPerson),cls:capacityCls(pct)};
+  }).sort((a,b)=>a.pct-b.pct||a.naam.localeCompare(b.naam));
+  const totalUsed=list.reduce((s,p)=>s+p.used,0);
+  const totalTarget=list.reduce((s,p)=>s+p.target,0);
+  const totalPct=capacityPct(totalUsed,totalTarget);
+  return{list,totalUsed,totalTarget,totalPct,totalRemaining:Math.max(0,totalTarget-totalUsed),totalOver:Math.max(0,totalUsed-totalTarget),targetPerPerson,days:Math.max(1,days||1),cls:capacityCls(totalPct)};
+}
+function renderCapacityHtml(stats){
+  const rows=stats.list.map(p=>{
+    const width=Math.min(100,p.pct);
+    const status=p.over>0?`+${formatUren(p.over)} over`:p.remaining>0?`${formatUren(p.remaining)} tekort`:'volledig benut';
+    return`<div class="capacity-row">
+      <div class="cap-name" title="${esc(p.naam)}">${esc(p.naam)}</div>
+      <div class="cap-bar"><div class="cap-fill" style="width:${width}%;background:var(--${p.cls==='good'?'green':p.cls==='warn'?'yellow':'red'})"></div></div>
+      <div class="cap-num">${formatUren(p.used)||'0min'} / ${formatUren(p.target)}</div>
+      <div class="cap-num ${p.cls}">${p.pct}%</div>
+      <div class="cap-num ${p.over>0?'warn':p.remaining>0?'bad':'good'}">${status}</div>
+    </div>`;
+  }).join('');
+  return `<div class="capacity-summary">
+    <div class="capacity-kpi"><div class="capacity-kpi-label">Norm per persoon</div><div class="capacity-kpi-value">${formatUren(WORKDAY_TARGET_MIN)}</div><div class="capacity-kpi-sub">7,4u = 444 min</div></div>
+    <div class="capacity-kpi"><div class="capacity-kpi-label">Geregistreerd</div><div class="capacity-kpi-value ${stats.cls}">${formatUren(stats.totalUsed)||'0min'}</div><div class="capacity-kpi-sub">op basis van minuten per persoon</div></div>
+    <div class="capacity-kpi"><div class="capacity-kpi-label">Doelcapaciteit</div><div class="capacity-kpi-value">${formatUren(stats.totalTarget)||'0min'}</div><div class="capacity-kpi-sub">${stats.list.length} persoon/personen × ${stats.days} dag(en)</div></div>
+    <div class="capacity-kpi"><div class="capacity-kpi-label">Benutting</div><div class="capacity-kpi-value ${stats.cls}">${stats.totalPct}%</div><div class="capacity-kpi-sub">${stats.totalRemaining>0?formatUren(stats.totalRemaining)+' nog te benutten':stats.totalOver>0?formatUren(stats.totalOver)+' boven doel':'alles benut'}</div></div>
+  </div>
+  <div class="capacity-list">
+    <div class="capacity-row head"><div>Persoon</div><div>Benutting</div><div>Uren</div><div>%</div><div>Status</div></div>
+    ${rows||'<div class="empty-state"><div class="empty-txt">Geen actieve teamleden</div></div>'}
+  </div>
+  <div class="capacity-note">Gebruik: vink taken af met aparte minuten per persoon. Zodra iedereen rond <strong>${formatUren(WORKDAY_TARGET_MIN)}</strong> zit, is de beschikbare dagcapaciteit volledig benut. Oude afvinkingen zonder aparte minuten worden bij meerdere personen indicatief gelijk verdeeld.</div>`;
+}
+function capacityStatusCard(stats){
+  const bg=stats.cls==='good'?'var(--green-bg)':stats.cls==='warn'?'var(--yellow-bg)':'var(--red-bg)';
+  const br=stats.cls==='good'?'var(--green-br)':stats.cls==='warn'?'var(--yellow-br)':'var(--red-br)';
+  const tc=stats.cls==='good'?'var(--green)':stats.cls==='warn'?'var(--yellow)':'var(--red)';
+  const sub=stats.totalRemaining>0?`${formatUren(stats.totalRemaining)} nog vrij`:stats.totalOver>0?`${formatUren(stats.totalOver)} boven doel`:'volledig benut';
+  return`<div style="background:${bg};border:1px solid ${br};border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:12px;color:var(--txt2)">Capaciteit vandaag <small style="color:var(--txt3)">(${formatUren(stats.totalUsed)||'0min'} / ${formatUren(stats.totalTarget)||'0min'})</small></span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:${tc}">${stats.totalPct}% · ${sub}</span></div>`;
+}
+
+/* ─── MULTI-PERSON HELPERS + APARTE MINUTEN PER PERSOON ─── */
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));
+const js=s=>String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+function splitPeople(v){
+  return String(v||'').split(/[\/,;|\n]+/).map(x=>x.trim()).filter(Boolean);
+}
+function uniqPeople(arr){
+  const seen=new Set();
+  return (arr||[]).map(x=>String(x||'').trim()).filter(Boolean).filter(x=>{const k=x.toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+}
+function peopleText(v){return uniqPeople(Array.isArray(v)?v:splitPeople(v)).join(' / ')}
+function peopleList(v){return uniqPeople(Array.isArray(v)?v:splitPeople(v))}
+function firstPerson(v){return peopleList(v)[0]||''}
+function addPeopleCount(cnt,uitvoerder){peopleList(uitvoerder).forEach(n=>cnt[n]=(cnt[n]||0)+1)}
+function peopleChips(v,done=false,max=4){
+  const arr=peopleList(v);
+  if(!arr.length)return '—';
+  const shown=arr.slice(0,max);
+  return `<div class="person-chips">${shown.map(p=>`<span class="person-chip${done?' done':''}">${esc(p)}</span>`).join('')}${arr.length>max?`<span class="person-chip more">+${arr.length-max}</span>`:''}</div>`;
+}
+
+// We bewaren aparte minuten compatibel in het bestaande veld "opmerking".
+// Zo moet de Supabase database niet verplicht gemigreerd worden.
+const PM_MARK='[[STOPS_PM_V1:';
+const PM_RE=/\n?\[\[STOPS_PM_V1:([^\]]*)\]\]/;
+function parsePersonMinutesFromNote(note){
+  const m=String(note||'').match(PM_RE);
+  if(!m)return{};
+  try{
+    const raw=decodeURIComponent(m[1]);
+    const obj=JSON.parse(raw);
+    const out={};
+    Object.entries(obj||{}).forEach(([k,v])=>{const n=String(k||'').trim();const min=parseInt(v);if(n&&min>0)out[n]=min});
+    return out;
+  }catch(e){return{}}
+}
+function cleanNote(note){return String(note||'').replace(PM_RE,'').trim()}
+function buildNoteWithPersonMinutes(note,pm){
+  const clean=cleanNote(note);
+  const filtered={};
+  Object.entries(pm||{}).forEach(([k,v])=>{const n=String(k||'').trim();const min=parseInt(v);if(n&&min>0)filtered[n]=min});
+  const has=Object.keys(filtered).length>0;
+  return (clean||has)?`${clean}${clean&&has?'\n':''}${has?PM_MARK+encodeURIComponent(JSON.stringify(filtered))+']]':''}`:null;
+}
+function recordPersonMinutes(a){return parsePersonMinutesFromNote(a?.opmerking)}
+function recordDuration(a){
+  const pm=recordPersonMinutes(a);
+  const sum=Object.values(pm).reduce((s,v)=>s+(parseInt(v)||0),0);
+  return sum>0?sum:(parseInt(a?.duur_min)||0);
+}
+function personDurationPlain(a){
+  const pm=recordPersonMinutes(a);
+  return Object.entries(pm).filter(([,m])=>m>0).map(([p,m])=>`${p}: ${m} min`).join(' · ');
+}
+function personDurationHtml(a){
+  const txt=personDurationPlain(a);
+  return txt?`<div class="t-dur-breakdown">${esc(txt)}</div>`:'';
+}
+function personDurationMapToPlain(pm){
+  return Object.entries(pm||{}).filter(([,m])=>parseInt(m)>0).map(([p,m])=>`${p}: ${parseInt(m)} min`).join(' · ');
+}
+function addPeopleDuration(personDur,a){
+  const pm=recordPersonMinutes(a);
+  const entries=Object.entries(pm).filter(([,m])=>parseInt(m)>0);
+  if(entries.length){entries.forEach(([p,m])=>personDur[p]=(personDur[p]||0)+(parseInt(m)||0));return}
+  const persons=peopleList(a.uitvoerder);
+  const dur=parseInt(a.duur_min)||0;
+  if(persons.length===1&&dur>0)personDur[persons[0]]=(personDur[persons[0]]||0)+dur;
+}
+function peoplePickerHtml(pickId,selected=[],opts={}){
+  const sel=peopleList(selected).map(x=>x.toLowerCase());
+  const team=allLeden.map(l=>l.naam);
+  const unknown=peopleList(selected).filter(n=>!team.some(t=>t.toLowerCase()===n.toLowerCase()));
+  const compact=opts.compact?' compact':'';
+  const extra=opts.extra!==false;
+  const durAttr=opts.durationTarget?` onchange="syncPersonDuration('${js(pickId)}','${js(opts.durationTarget)}')"`:'';
+  return `<div class="people-picker${compact}" data-pick="${esc(pickId)}">
+    <div class="people-picker-grid">
+      ${team.map(n=>`<label class="people-check"><input type="checkbox" value="${esc(n)}" ${sel.includes(n.toLowerCase())?'checked':''}${durAttr}>${esc(n)}</label>`).join('')}
+    </div>
+    ${extra?`<input class="people-extra" data-pick-extra="${esc(pickId)}" placeholder="Extra naam/groep, bv. Stock team" value="${esc(unknown.join(' / '))}"${durAttr.replace(' onchange',' oninput')}>`:''}
+  </div>`;
+}
+function getPeopleFromPicker(pickId){
+  const wrap=[...document.querySelectorAll('.people-picker')].find(w=>w.dataset.pick===pickId);
+  const checked=wrap?[...wrap.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.value):[];
+  const extraEl=[...document.querySelectorAll('[data-pick-extra]')].find(e=>e.dataset.pickExtra===pickId);
+  return peopleText([...checked,...splitPeople(extraEl?.value||'')]);
+}
+function personDurationBoxHtml(pickId,boxId,initialMap={}){
+  const json=JSON.stringify(initialMap||{});
+  return `<div class="person-duration-box" id="${esc(boxId)}" data-pick-ref="${esc(pickId)}" data-person-minutes="${esc(json)}"></div>`;
+}
+function getPersonMinutesFromBox(boxId){
+  const box=document.getElementById(boxId);
+  if(!box)return{};
+  const out={};
+  box.querySelectorAll('.pd-input').forEach(inp=>{const n=inp.dataset.person||'';const v=parseInt(inp.value);if(n&&v>0)out[n]=v});
+  return out;
+}
+function durationSum(pm){return Object.values(pm||{}).reduce((s,v)=>s+(parseInt(v)||0),0)||null}
+function peopleFromPersonMinutes(pm){return Object.entries(pm||{}).filter(([,m])=>(parseInt(m)||0)>0).map(([p])=>String(p||'').trim()).filter(Boolean)}
+function effectivePeopleForSave(naam,pm){
+  const fromMinutes=peopleFromPersonMinutes(pm);
+  return fromMinutes.length?peopleText(fromMinutes):peopleText(naam);
+}
+function reportPeopleForRecord(a){
+  const fromMinutes=peopleFromPersonMinutes(recordPersonMinutes(a));
+  return fromMinutes.length?fromMinutes:peopleList(a?.uitvoerder);
+}
+function missingDurationPeople(naam,pm){
+  const people=peopleList(naam);
+  if(people.length<=1)return[];
+  return people.filter(p=>!(parseInt(pm?.[p])>0));
+}
+function validatePersonMinutes(naam,pm){
+  const missing=missingDurationPeople(naam,pm);
+  if(missing.length){toast('Vul minuten in voor: '+missing.join(', '),'e');return false}
+  return true;
+}
+window.syncPersonDuration=(pickId,boxId)=>{
+  const box=document.getElementById(boxId);if(!box)return;
+  const current=getPersonMinutesFromBox(boxId);
+  let initial={};try{initial=JSON.parse(box.dataset.personMinutes||'{}')||{}}catch(e){initial={}}
+  const merged={...initial,...current};
+  const people=peopleList(getPeopleFromPicker(pickId));
+  if(!people.length){box.innerHTML='<div class="pd-muted">Selecteer eerst één of meerdere personen.</div>';return}
+  box.innerHTML=`<div class="person-duration-title">Minuten per persoon</div>`+
+    people.map(p=>`<div class="pd-row"><div class="pd-name" title="${esc(p)}">${esc(p)}</div><input class="pd-input" data-person="${esc(p)}" type="number" min="0" max="999" placeholder="min" value="${merged[p]??''}" oninput="updatePersonDurationTotal('${js(boxId)}')"></div>`).join('')+
+    `<div class="pd-total" id="${esc(boxId)}-total"></div>`;
+  updatePersonDurationTotal(boxId);
+};
+window.updatePersonDurationTotal=(boxId)=>{
+  const total=durationSum(getPersonMinutesFromBox(boxId))||0;
+  const el=document.getElementById(boxId+'-total');
+  if(el)el.textContent=total>0?`Totaal: ${total} min`:'Vul per geselecteerde persoon minuten in';
+};
+function initPersonDurationBoxes(){
+  document.querySelectorAll('.person-duration-box[data-pick-ref]').forEach(box=>syncPersonDuration(box.dataset.pickRef,box.id));
+}
+function renderTaakPeoplePicker(selected=[]){
+  const el=document.getElementById('fi-verantw-picker');
+  if(el){
+    const tmp=document.createElement('div');
+    tmp.innerHTML=peoplePickerHtml('taak-verantwoordelijke',selected,{extra:true}).trim();
+    const picker=tmp.firstElementChild;
+    el.className=picker.className;
+    el.dataset.pick=picker.dataset.pick;
+    el.innerHTML=picker.innerHTML;
+  }
+  const hidden=document.getElementById('fi-verantw');
+  if(hidden)hidden.value=peopleText(selected);
+}
+
+document.getElementById('tb-date').textContent=now.toLocaleDateString('nl-BE',{day:'numeric',month:'short',year:'numeric'});
+document.getElementById('tb-week').textContent=`Week ${WK}`;
+
+/* ─── SQL ─── */
+const SQL=`-- ST·OPS Stock Team v6.9 — Database Setup
+create table if not exists team_leden (
+  id         uuid primary key default gen_random_uuid(),
+  naam       text not null unique,
+  actief     boolean default true,
+  created_at timestamptz default now()
+);
+create table if not exists taken (
+  id              uuid primary key default gen_random_uuid(),
+  taak_id         text unique not null,
+  naam            text not null,
+  omschrijving    text,
+  frequentie      text not null,
+  verantwoordelijke text, -- meerdere personen worden compatibel opgeslagen als tekst: 'Marc / Jose / Bryan'
+  team            text default 'Stock team',
+  actief          boolean default true,
+  prioriteit      text default 'Normaal',
+  created_at      timestamptz default now()
+);
+create table if not exists afvinkingen (
+  id          uuid primary key default gen_random_uuid(),
+  taak_id     uuid references taken(id) on delete cascade,
+  datum       date not null,
+  week_nr     integer,
+  maand       text,
+  gedaan      boolean default false,
+  uitvoerder  text,
+  opmerking   text,
+  duur_min    integer,
+  created_at  timestamptz default now()
+);
+alter table team_leden enable row level security;
+alter table taken       enable row level security;
+alter table afvinkingen enable row level security;
+create policy if not exists "open_leden" on team_leden for all using(true) with check(true);
+create policy if not exists "open_taken" on taken       for all using(true) with check(true);
+create policy if not exists "open_af"    on afvinkingen for all using(true) with check(true);
+insert into team_leden(naam) values
+  ('Marc'),('Jeroen'),('Geoffrey'),('Koen'),('Kristof'),
+  ('Sam'),('Wim'),('Georgios'),('Iyamu'),('Ronny'),
+  ('Mike'),('Kris'),('Patrick'),('Bryan'),('Wendy'),
+  ('Virginia'),('Ali'),('Jose'),('Michael')
+on conflict(naam) do nothing;
+insert into taken(taak_id,naam,omschrijving,frequentie,verantwoordelijke,prioriteit) values
+ ('STNE 001','Negative stock','Correction of articles with negative stock','Dagelijks','Stock team','Hoog'),
+ ('STWG 002','Virtuele Zones','Correction pallets in virtual zone (W, G, X)','Dagelijks','Stock team','Hoog'),
+ ('STMN 005','Manuele Nullen','Analyse mancos declared by pickers, correction of the stock','Dagelijks','Georgios/Geoffrey','Normaal'),
+ ('STLI 006','Litiges','Analyze claims from stores, correction of the stock','Dagelijks','Stock team','Normaal'),
+ ('STSD 008','Stock < 5 dagen','Analyze articles with less than 5 days of stock','Dagelijks','Georgios/Geoffrey','Hoog'),
+ ('STPZ 009','Probleemzone','Analyze and correction of articles in the problem zone','Dagelijks','Stock team','Normaal'),
+ ('STMD 020','Master data changes','Analyze and correction of master data of article','Dagelijks','Marc/Koen/Geoffrey/Jose','Normaal'),
+ ('STSR 021','Stock recon','Check stock variance between SAP and WMS','Dagelijks','Marc/Geoffrey/Jose','Hoog'),
+ ('STDA 023','Damaged goods','Check and correct damaged goods','Dagelijks','Ronny/Wim/Iyamu/Michael','Normaal'),
+ ('STCO 024','Stock correcties','Update file stock corrections','Dagelijks','Marc/Geoffrey/Jose','Normaal'),
+ ('STDS 004','DS Lijst','Configuration of articles in end of life','Wekelijks','Stock team','Normaal'),
+ ('STRE 007','P7 - replenishment','Analyze pallets in replenishment, correction of the stock','Wekelijks','Marc','Normaal'),
+ ('STPC 016','Pick slot not in correct circuit','Analyze and correction of pick slot','Wekelijks','Marc/Jose','Normaal'),
+ ('STAW 017','Article without picking slot','Analyze and implementation of article without picking slot','Wekelijks','Marc/Jose','Normaal'),
+ ('STSC 018','Storage class','Analyze and correction of storage class','Wekelijks','Marc/Jose','Normaal'),
+ ('STMA 019','Pick slot met meerdere artikels','Analyze and correction of pick slot with multiple articles','Wekelijks','Marc/Jose','Normaal'),
+ ('STST 022','Status 50','Check articles in status 50 older than 3 days','Wekelijks','Marc/Koen/Geoffrey/Jose','Normaal'),
+ ('STPI 025','Route with/without picking','Check articles in route 000 and affect the correct route','Wekelijks','Marc/Jose','Normaal'),
+ ('STFR 027','Filling rate','Check the filling rate of the warehouse','Wekelijks','Marc/Geoffrey/Jose','Normaal'),
+ ('STEL 012','Empty location check reserve','Check empty/full locations, correction of stock reserve','Maandelijks','Stock team','Normaal'),
+ ('STRA 014','Geblokkeerde vakken (RAD)','Analysis and correction of locations immobilized by reachers','Maandelijks','Stock team','Normaal'),
+ ('STDI 013','Draaiende inventaris','Perform inventory of picking locations','Maandelijks','Stock team','Normaal'),
+ ('STIM 003','Implementatie nieuwe artikelen','Implementation of new articles for regular stock','Maandelijks','Marc/Koen/Geoffrey/Jose','Normaal'),
+ ('STVH 010','Interne verhuis','Analyze and configuration of articles that need an internal moving','Indien nodig','Marc/Koen/Geoffrey/Jose','Normaal'),
+ ('STSA 011','Stalen','Send samples requested by Maxeda','Indien nodig','Stock team','Normaal'),
+ ('STMO 01','Materiaal uit magazijn','Procedure for taking any materials out of warehouse','Indien nodig','Marc/Geoffrey/Jose','Normaal'),
+ ('STGS 026','Goods to sell','Procedure for listing products that can potentially be sold','Indien nodig','Marc/Jose','Normaal')
+on conflict(taak_id) do nothing;`;
+
+document.getElementById('sql-pre').textContent=SQL;
+window.showSql=()=>document.getElementById('sql-ov').classList.add('open');
+window.copySql=()=>{navigator.clipboard.writeText(SQL);toast('SQL gekopieerd!','s')};
+window.closeOv=id=>{if(id==='corr-ov'){if(!corrSkipCaptureOnClose)captureCorrDraftsForCurrentView();corrSkipCaptureOnClose=false;}document.getElementById(id).classList.remove('open');};
+window.resetConn=()=>location.reload();
+
+/* ─── SIDEBAR MOBILE ─── */
+window.openSidebar=()=>{document.getElementById('sidebar').classList.add('open');document.getElementById('sb-overlay').style.display='block'};
+window.closeSidebar=()=>{document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').style.display='none'};
+
+/* ─── CONNECT ─── */
+const NETLIFY_SUPABASE_URL='https://lhikurrrabexgmqbybqf.supabase.co';
+const NETLIFY_SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoaWt1cnJyYWJleGdtcWJ5YnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NzAyNTUsImV4cCI6MjA5MzU0NjI1NX0.Wy2t63Nfoj0gA8o5KeoChFHt7felA_McWemEnSdIJlc';
+
+function isInjected(v){return v && !v.startsWith('__') && !v.endsWith('__')}
+
+// Deze versie gebruikt Netlify environment variables. Het oude invulscherm is dus uitgeschakeld.
+window.doConnect=async()=>{
+  showErr('Deze versie gebruikt Netlify environment variables. Controleer SUPABASE_URL en SUPABASE_ANON_KEY in Netlify.');
+};
+
+function showErr(m){
+  const e=document.getElementById('setup-err');
+  if(e){e.textContent=m;e.style.display='block'}
+  document.getElementById('setup').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+async function boot(u,k){
+  try{
+    SB=createClient(u,k);
+    const{error}=await SB.from('taken').select('id').limit(1);
+    if(error)throw error;
+    document.getElementById('setup').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('conn-dot').classList.add('ok');
+    document.getElementById('conn-txt').textContent='Verbonden';
+    await loadAll();
+  }catch(e){
+    document.getElementById('conn-dot')?.classList.add('err');
+    showErr('Verbinding mislukt: '+e.message);
+  }
+}
+
+if(isInjected(NETLIFY_SUPABASE_URL)&&isInjected(NETLIFY_SUPABASE_ANON_KEY)){
+  boot(NETLIFY_SUPABASE_URL,NETLIFY_SUPABASE_ANON_KEY);
+}else{
+  showErr('Netlify environment variables ontbreken of zijn niet geïnjecteerd. Zet SUPABASE_URL en SUPABASE_ANON_KEY in Netlify, of pas build.js aan naar jouw variable-namen.');
+}
+
+/* ─── GLOBAL USER ─── */
+globalUser=localStorage.getItem('st_user')||'';
+function updateUserPill(){
+  const av=document.getElementById('user-av');
+  const np=document.getElementById('user-name-pill');
+  if(globalUser){av.textContent=globalUser[0].toUpperCase();np.textContent=globalUser}
+  else{av.textContent='?';np.textContent='Kies naam'}
+}
+updateUserPill();
+
+window.openUserModal=()=>{
+  const list=document.getElementById('user-list');
+  list.innerHTML=allLeden.map(l=>`<button class="btn btn-ghost" style="justify-content:flex-start;gap:10px;width:100%" onclick="selectUser('${l.naam}')">
+    <div style="width:24px;height:24px;border-radius:6px;background:var(--orange-bg);border:1px solid var(--orange-br);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--orange)">${l.naam[0]}</div>
+    ${l.naam}${globalUser===l.naam?' <span style="margin-left:auto;font-size:10px;color:var(--green)">✓ actief</span>':''}
+  </button>`).join('');
+  document.getElementById('user-ov').classList.add('open');
+};
+window.selectUser=(naam)=>{
+  globalUser=naam;
+  localStorage.setItem('st_user',naam);
+  updateUserPill();
+  closeOv('user-ov');
+  toast(`Actieve gebruiker: ${naam}`,'s');
+};
+
+/* ─── LOAD ALL ─── */
+async function loadAll(){
+  await Promise.all([fetchTaken(),fetchLeden()]);
+  buildGNS();
+  hydrateStoredPeriodModes();
+  loadChecklistDrafts();
+  await Promise.all([fetchAfByFreq('Dagelijks'),fetchAfByFreq('Wekelijks'),fetchAfByFreq('Maandelijks'),fetchAfByFreq('Indien nodig')]);
+  renderAll();
+}
+async function fetchTaken(){
+  const{data}=await SB.from('taken').select('*').eq('actief',true).order('frequentie').order('taak_id');
+  allTaken=data||[];
+  document.getElementById('taken-sub').textContent=`${allTaken.length} actieve taken`;
+}
+async function fetchLeden(){
+  const{data}=await SB.from('team_leden').select('*').eq('actief',true).order('naam');
+  allLeden=data||[];
+}
+function buildGNS(){
+  const hp=document.getElementById('hist-persoon');
+  if(hp){hp.innerHTML='<option value="">Alle personen</option>';allLeden.forEach(l=>hp.innerHTML+=`<option value="${l.naam}">${l.naam}</option>`)}
+  const cu=document.getElementById('corr-uitv');
+  if(cu){cu.innerHTML='<option value="">— Kies naam —</option>';allLeden.forEach(l=>cu.innerHTML+=`<option value="${l.naam}">${l.naam}</option>`);if(globalUser)cu.value=globalUser}
+}
+
+/* ─── FETCH AFVINKINGEN ─── */
+async function fetchAfByFreq(freq,overrideDatum){
+  const ids=allTaken.filter(t=>t.frequentie===freq).map(t=>t.id);
+  if(!ids.length){if(freq==='Dagelijks')dagAf={};else if(freq==='Wekelijks')weekAf={};else if(freq==='Maandelijks')mndAf={};else nodAf={};return}
+  const ctx=contextForFreq(freq,overrideDatum);
+  let q=SB.from('afvinkingen').select('*').in('taak_id',ids);
+  if(freq==='Dagelijks'){
+    q=q.eq('datum',ctx.datum);
+  }else if(freq==='Wekelijks'){
+    q=q.eq('week_nr',ctx.week_nr).gte('datum',ctx.weekStart).lt('datum',ctx.weekEnd);
+  }else if(freq==='Maandelijks'){
+    q=q.eq('maand',ctx.maand);
+  }else{
+    q=q.eq('datum',ctx.datum);
+  }
+  const{data}=await q;
+  const map={};(data||[]).forEach(a=>{map[a.taak_id]=a});
+  if(freq==='Dagelijks')dagAf=map;
+  else if(freq==='Wekelijks')weekAf=map;
+  else if(freq==='Maandelijks')mndAf=map;
+  else nodAf=map;
+}
+
+/* ─── NAV ─── */
+const pgTitles={dashboard:'Dashboard',dagelijks:'Dagelijkse checklist',wekelijks:'Wekelijkse checklist',maandelijks:'Maandelijkse checklist',indiennodig:'Indien nodig',taken:'Takenbeheer',historiek:'Historiek',rapporten:'PDF Rapporten',team:'Team & Scores'};
+window.goPage=(pg,btn)=>{
+  snapshotChecklistDrafts();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+pg).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('pg-title').textContent=pgTitles[pg]||pg;
+  if(pg==='historiek'){initHistDates();loadHistTab()}
+  if(pg==='rapporten')initReportPage();
+  if(pg==='team')renderTeam();
+  closeSidebar();
+};
+
+function renderAll(){renderDashboard();renderCL('Dagelijks');renderCL('Wekelijks');renderCL('Maandelijks');renderCL('Indien nodig');renderTakenTable();if(document.getElementById('pg-team')?.classList.contains('active'))renderTeam()}
+
+/* ─── UTILS ─── */
+function pctCls(p){return p>=80?'good':p>=50?'warn':'bad'}
+function afMapFor(freq){return freq==='Dagelijks'?dagAf:freq==='Wekelijks'?weekAf:freq==='Maandelijks'?mndAf:nodAf}
+function freqKey(freq){return freq==='Dagelijks'?'dag':freq==='Wekelijks'?'week':freq==='Maandelijks'?'mnd':'nodig'}
+function freqColor(freq){return freq==='Dagelijks'?'var(--orange)':freq==='Wekelijks'?'var(--blue)':freq==='Maandelijks'?'var(--green)':'var(--purple)'}
+function srchId(freq){return{Dagelijks:'srch-dag',Wekelijks:'srch-week',Maandelijks:'srch-mnd','Indien nodig':'srch-nodig'}[freq]||''}
+function t_naam(id){return allTaken.find(t=>t.id===id)?.naam||''}
+
+/* ─── PERIODE MODUS (checklists voor andere dag/week/maand) ─── */
+window.toggleDatumModus=(fk)=>{
+  const bar=document.getElementById('dmb-'+fk);
+  if(!bar)return;
+  const isOpen=bar.style.display!=='none';
+  if(isOpen){exitDatumModus(fk);return}
+  bar.style.display='flex';
+  const inp=fk==='mnd'?document.getElementById('dm-mnd-month'):document.getElementById('dm-'+fk+'-date');
+  if(inp&&!inp.value)inp.value=fk==='mnd'?maandS:todayS;
+};
+window.exitDatumModus=async(fk)=>{
+  snapshotChecklistDrafts();
+  const bar=document.getElementById('dmb-'+fk);if(bar)bar.style.display='none';
+  const freq=freqFromKey(fk);
+  datumModus[fk]=null;
+  savePeriodModes();
+  await fetchAfByFreq(freq);
+  renderCL(freq);renderDashboard();
+  toast(`Terug naar huidige ${fk==='week'?'week':fk==='mnd'?'maand':'dag'}`,'i');
+};
+window.loadDatumModus=async(fk)=>{
+  snapshotChecklistDrafts();
+  const freq=freqFromKey(fk);
+  const inp=fk==='mnd'?document.getElementById('dm-mnd-month'):document.getElementById('dm-'+fk+'-date');
+  const value=inp?.value;if(!value)return;
+  const datum=fk==='mnd'?value+'-01':value;
+  datumModus[fk]=fk==='mnd'?value:datum;
+  savePeriodModes();
+  await fetchAfByFreq(freq,datum);
+  renderCL(freq);renderDashboard();
+  toast(`${fk==='week'?'Week-modus':fk==='mnd'?'Maand-modus':'Datum-modus'}: ${periodLabel(freq,datum)} geladen`,'i');
+};
+
+/* ─── CHECKLIST RENDER ─── */
+window.renderCL=function(freq){
+  const afMap=afMapFor(freq);
+  const fk=freqKey(freq);
+  const tasks=allTaken.filter(t=>t.frequentie===freq);
+  const done=tasks.filter(t=>afMap[t.id]?.gedaan).length;
+  const total=tasks.length;
+  const pct=total>0?Math.round(done/total*100):0;
+  const color=freqColor(freq);
+  const barEl=document.getElementById('clb-'+fk);const fracEl=document.getElementById('clf-'+fk);const pctEl=document.getElementById('clp-'+fk);const badgeEl=document.getElementById('nb-'+fk);
+  if(barEl){barEl.style.width=pct+'%';barEl.style.background=color}
+  if(fracEl)fracEl.textContent=`${done}/${total}`;
+  if(pctEl){pctEl.textContent=pct+'%';pctEl.className='cl-pct '+pctCls(pct)}
+  if(badgeEl)badgeEl.textContent=total-done>0?(total-done):'';
+  const srch=(document.getElementById(srchId(freq))?.value||'').toLowerCase();
+  const visible=tasks.filter(t=>!srch||t.naam.toLowerCase().includes(srch)||t.taak_id.toLowerCase().includes(srch)||(t.verantwoordelijke||'').toLowerCase().includes(srch));
+  const listEl=document.getElementById('tl-'+fk);if(!listEl)return;
+  if(!tasks.length){listEl.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16v.5" stroke-linecap="round"/></svg></div><div class="empty-txt">Geen taken</div></div>`;return}
+  if(!visible.length){listEl.innerHTML=`<div class="empty-state"><div class="empty-txt">Geen resultaten voor "${srch}"</div></div>`;return}
+
+  // toon datum-modus indicator in topbar datum
+  const isDatumMode=freq==='Dagelijks'&&datumModus.dag&&datumModus.dag!==todayS;
+
+  listEl.innerHTML=visible.map(t=>{
+    const af=afMap[t.id];
+    const isDone=!!af?.gedaan;
+    const freqRowCls=`freq-${fk}`;
+    const durMin=recordDuration(af);
+    const durTxt=durMin?formatUren(durMin):'';
+    const draft=!isDone?getChecklistDraft(freq,t.id):null;
+    const draftPeople=draft?.uitvoerder?peopleList(draft.uitvoerder):(globalUser?[globalUser]:[]);
+    const draftMinutes=draft?.person_minutes||{};
+    const draftNote=draft?.opmerking||'';
+    return`<div class="task-row ${isDone?'done':''} ${freqRowCls}" onclick="openPanel('${t.id}','${freq}')">
+      <div class="chk${isDone?' on':''}"><svg viewBox="0 0 11 11" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,5.5 4.5,8.5 9.5,2"/></svg></div>
+      <div class="t-info">
+        <div class="t-name">${t.naam}</div>
+        <div class="t-desc">${t.omschrijving||'—'}</div>
+      </div>
+      <div class="t-meta">
+        ${isDone?`<div class="t-done-info">
+          ${af.uitvoerder?`<div class="t-done-name"><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,5.5 4.5,8.5 9.5,2"/></svg>${peopleChips(af.uitvoerder,true)}</div>`:''}
+          ${durTxt?`<div class="t-done-dur">⏱ ${durTxt}</div>${personDurationHtml(af)}`:''}
+        </div>`:''}
+        ${t.prioriteit==='Hoog'?`<div class="t-prio-hoog">HOOG</div>`:''}
+        <div class="t-who">${peopleChips(t.verantwoordelijke)}</div>
+        <span class="t-id">${t.taak_id}</span>
+      </div>
+    </div>
+    <div class="task-panel" id="panel-${t.id}">
+      ${isDone
+        ?`<div style="display:flex;align-items:center;gap:10px;width:100%;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--txt2)">Gedaan door ${peopleChips(af.uitvoerder,true)}${durTxt?' · '+durTxt:''}</span>${personDurationHtml(af)}
+            <button class="tp-cancel" onclick="openEditPanel('${t.id}','${freq}')">✏ Bewerken</button>
+            <button class="tp-cancel" onclick="showUncheckConfirm('${t.id}','${freq}')">↩ Ongedaan</button>
+          </div>
+          <div class="confirm-inline" id="unc-${t.id}">
+            <strong>Zeker ongedaan maken?</strong>
+            <button class="btn btn-danger btn-xs" onclick="uncheck('${t.id}','${freq}')">Ja, verwijder</button>
+            <button class="btn btn-ghost btn-xs" onclick="document.getElementById('unc-${t.id}').classList.remove('open')">Annuleer</button>
+          </div>`
+        :`<div class="tp-group">
+            <label class="tp-label">Wie heeft het gedaan?</label>
+            ${peoplePickerHtml('do-'+t.id,draftPeople,{extra:false,compact:true,durationTarget:'pd-do-'+t.id})}
+          </div>
+          <div class="tp-group"><label class="tp-label">Duur apart</label>${personDurationBoxHtml('do-'+t.id,'pd-do-'+t.id,draftMinutes)}</div>
+          <div class="tp-group"><label class="tp-label">Opmerking</label><textarea class="tp-ta" placeholder="Optioneel..." id="tps-opm-${t.id}" rows="1">${esc(draftNote)}</textarea>${draft?'<div class="pd-muted">Concept automatisch bewaard</div>':''}</div>
+          <button class="tp-done" onclick="doCheck('${t.id}','${freq}')">✓ Afvinken</button>
+          <button class="tp-cancel" onclick="closePanel('${t.id}')">Annuleren</button>`
+      }
+    </div>
+    ${isDone?`<div class="task-panel" id="edit-panel-${t.id}" style="display:none">
+      <div class="tp-group"><label class="tp-label">Uitvoerder(s)</label>
+        ${peoplePickerHtml('edit-'+t.id,peopleList(af.uitvoerder),{extra:false,compact:true,durationTarget:'pd-edit-'+t.id})}
+      </div>
+      <div class="tp-group"><label class="tp-label">Duur apart</label>${personDurationBoxHtml('edit-'+t.id,'pd-edit-'+t.id,recordPersonMinutes(af))}</div>
+      <div class="tp-group"><label class="tp-label">Opmerking</label><textarea class="tp-ta" id="ep-opm-${t.id}" rows="1">${cleanNote(af.opmerking)||''}</textarea></div>
+      <button class="tp-done" onclick="saveEdit('${af.id}','${t.id}','${freq}')">💾 Opslaan</button>
+      <button class="tp-cancel" onclick="closeEditPanel('${t.id}')">Annuleren</button>
+    </div>`:''}`;
+  }).join('');
+  initPersonDurationBoxes();
+};
+
+/* ─── PANEL OPEN/CLOSE ─── */
+window.openPanel=(taakId,freq)=>{
+  event?.stopPropagation();
+  document.querySelectorAll('.task-panel.open').forEach(p=>{if(p.id!=='panel-'+taakId)p.classList.remove('open')});
+  const panel=document.getElementById('panel-'+taakId);
+  if(panel)panel.classList.toggle('open');
+};
+window.closePanel=(taakId)=>{event?.stopPropagation();document.getElementById('panel-'+taakId)?.classList.remove('open')};
+window.showUncheckConfirm=(taakId,freq)=>{event?.stopPropagation();document.getElementById('unc-'+taakId)?.classList.add('open')};
+window.openEditPanel=(taakId,freq)=>{
+  event?.stopPropagation();
+  const ep=document.getElementById('edit-panel-'+taakId);
+  if(ep){ep.style.display='flex';ep.style.flexWrap='wrap';ep.style.gap='10px';ep.style.padding='10px 16px 12px 48px';ep.style.alignItems='flex-end';ep.style.background='var(--blue-bg)';ep.style.borderBottom='1px solid var(--blue-br)'}
+};
+window.closeEditPanel=(taakId)=>{event?.stopPropagation();const ep=document.getElementById('edit-panel-'+taakId);if(ep)ep.style.display='none'};
+
+/* ─── BEWERKEN (inline edit op afgevinkte taak) ─── */
+window.saveEdit=async(afId,taakId,freq)=>{
+  event?.stopPropagation();
+  const rawNaam=getPeopleFromPicker('edit-'+taakId);
+  const pm=getPersonMinutesFromBox('pd-edit-'+taakId);
+  const naam=effectivePeopleForSave(rawNaam,pm);
+  const dur=durationSum(pm);
+  const opm=buildNoteWithPersonMinutes(document.getElementById('ep-opm-'+taakId)?.value?.trim()||'',pm);
+  const{data,error}=await SB.from('afvinkingen').update({uitvoerder:naam,duur_min:dur,opmerking:opm}).eq('id',afId).select().single();
+  if(error){toast('Fout: '+error.message,'e');return}
+  const afMap=afMapFor(freq);afMap[taakId]=data;
+  toast('✏ Bijgewerkt','s');
+  invalidateReportCache(true);
+  renderCL(freq);renderDashboard();
+};
+
+/* ─── AFVINKEN ─── */
+window.doCheck=async(taakId,freq)=>{
+  event?.stopPropagation();
+  const rawNaam=getPeopleFromPicker('do-'+taakId);
+  const pm=getPersonMinutesFromBox('pd-do-'+taakId);
+  const naam=effectivePeopleForSave(rawNaam,pm);
+  const dur=durationSum(pm);
+  const opm=buildNoteWithPersonMinutes(document.getElementById('tps-opm-'+taakId)?.value?.trim()||'',pm);
+  if(!naam){toast('Kies minstens één naam of vul minuten per persoon in','e');return}
+  localStorage.setItem('st_user',firstPerson(naam));globalUser=firstPerson(naam);updateUserPill();
+  const afMap=afMapFor(freq);
+  const ctx=contextForFreq(freq);
+  const useDatum=ctx.datum;
+  const useWK=freq==='Wekelijks'?ctx.week_nr:null;
+  const useMaand=freq==='Maandelijks'?ctx.maand:null;
+  let bestaand=null;
+  // Opslaan gebeurt per werkdatum. Voor week/maand blijft week_nr/maand metadata voor score.
+  {const{data}=await SB.from('afvinkingen').select('id').eq('taak_id',taakId).eq('datum',useDatum).maybeSingle();bestaand=data}
+  let resultData,resultError;
+  if(bestaand){
+    const{data,error}=await SB.from('afvinkingen').update({gedaan:true,uitvoerder:naam,duur_min:dur,opmerking:opm}).eq('id',bestaand.id).select().single();
+    resultData=data;resultError=error;
+  }else{
+    const rec={taak_id:taakId,datum:useDatum,week_nr:useWK,maand:useMaand,gedaan:true,uitvoerder:naam,duur_min:dur,opmerking:opm};
+    const{data,error}=await SB.from('afvinkingen').insert(rec).select().single();
+    resultData=data;resultError=error;
+  }
+  if(resultError){toast('Fout: '+resultError.message,'e');return}
+  afMap[taakId]=resultData;
+  clearChecklistDraft(freq,taakId);
+  toast(`✓ ${t_naam(taakId)} — ${naam}`+(dur?` (${formatUren(dur)})`:''),'s');
+  invalidateReportCache(true);
+  renderCL(freq);renderDashboard();
+};
+
+/* ─── ONGEDAAN ─── */
+window.uncheck=async(taakId,freq)=>{
+  event?.stopPropagation();
+  const afMap=afMapFor(freq);const af=afMap[taakId];if(!af)return;
+  const{error}=await SB.from('afvinkingen').delete().eq('id',af.id);
+  if(error){toast('Fout: '+error.message,'e');return}
+  delete afMap[taakId];toast('Teruggezet naar open','i');invalidateReportCache(true);renderCL(freq);renderDashboard();
+};
+
+/* ─── TAKEN CORRIGEREN MODAL ─── */
+let corrData={};  // taak_id -> {gedaan, uitvoerder, duur_min, opmerking, bestaandId}
+let corrFreq='Dagelijks';
+
+window.openCorrModal=async(datum=null,freq='Dagelijks')=>{
+  corrFreq=freq||'Dagelijks';
+  const freqEl=document.getElementById('corr-freq');
+  if(freqEl)freqEl.value=corrFreq;
+  const inp=document.getElementById('corr-datum');
+  if(datum){
+    inp.value=datum;
+  }else if(corrFreq==='Dagelijks'){
+    const g=new Date(now);g.setDate(g.getDate()-1);inp.value=toS(g);
+  }else{
+    inp.value=contextForFreq(corrFreq).datum;
+  }
+  const cu=document.getElementById('corr-uitv');
+  cu.innerHTML='<option value="">— Kies naam —</option>';
+  allLeden.forEach(l=>cu.innerHTML+=`<option value="${esc(l.naam)}">${esc(l.naam)}</option>`);
+  if(globalUser)cu.value=globalUser;
+  document.getElementById('corr-ov').classList.add('open');
+  await loadCorrTasks();
+};
+
+window.openCorrFromDetail=()=>{
+  const freq=corrFreqFromDetail(currentDetailContext);
+  const datum=corrDatumFromDetail(currentDetailContext);
+  openCorrModal(datum,freq);
+};
+
+window.loadCorrTasks=async()=>{
+  captureCorrDraftsForCurrentView();
+  const freqEl=document.getElementById('corr-freq');
+  corrFreq=freqEl?.value||corrFreq||'Dagelijks';
+  const datum=document.getElementById('corr-datum').value;
+  if(!datum)return;
+  const ctx=contextForFreq(corrFreq,datum);
+  const list=document.getElementById('corr-task-list');
+  const hint=document.getElementById('corr-period-hint');
+  const title=document.getElementById('corr-title');
+  const dateLbl=document.getElementById('corr-date-label');
+  if(title)title.textContent=`${corrFreq} taken corrigeren`;
+  if(dateLbl)dateLbl.textContent=corrFreq==='Wekelijks'?'Werkdatum in de week':corrFreq==='Maandelijks'?'Werkdatum in de maand':'Werkdatum';
+  if(hint){hint.style.display='block';hint.innerHTML=`Werkdatum: <strong>${ctx.datum}</strong> · Scoreperiode: <strong>${periodLabel(corrFreq,datum)}</strong>. ${corrFreq==='Indien nodig'?'Deze taken tellen niet mee in de score.':'Uren komen in het dagrapport van de werkdatum; score telt voor de gekozen periode.'}`;}
+  list.innerHTML='<div style="padding:16px;color:var(--txt3);font-size:12px;font-family:var(--mono)">Laden...</div>';
+  const ids=allTaken.filter(t=>t.frequentie===corrFreq).map(t=>t.id);
+  if(!ids.length){list.innerHTML=`<div style="padding:16px;color:var(--txt3)">Geen ${corrFreq.toLowerCase()} taken</div>`;return}
+  // Correctiemodus = uren ingeven per WERKDATUM.
+  // Een wekelijkse/maandelijkse taak kan dus op meerdere dagen tijd krijgen,
+  // terwijl de score nog steeds op week/maand wordt berekend.
+  let q=SB.from('afvinkingen').select('*').in('taak_id',ids).eq('datum',ctx.datum);
+  const{data}=await q;
+  const bestaandMap={};(data||[]).forEach(a=>bestaandMap[a.taak_id]=a);
+  corrData={};
+  const tasks=allTaken.filter(t=>t.frequentie===corrFreq);
+  list.innerHTML=tasks.map(t=>{
+    const b=bestaandMap[t.id];
+    const draft=getCorrDraft(corrFreq,ctx.datum,t.id);
+    const isDone=(draft?.gedaan!=null)?!!draft.gedaan:!!b?.gedaan;
+    const peopleVal=(draft?.uitvoerder!=null)?draft.uitvoerder:(b?.uitvoerder||(!b?.uitvoerder&&globalUser?globalUser:''));
+    const minutesVal=(draft?.person_minutes!=null)?draft.person_minutes:recordPersonMinutes(b);
+    corrData[t.id]={gedaan:isDone,uitvoerder:peopleVal||'',duur_min:durationSum(minutesVal)||recordDuration(b),opmerking:b?.opmerking||'',bestaandId:b?.id||null};
+    return`<div class="corr-task-row" id="crow-${t.id}">
+      <input type="checkbox" class="corr-chk" id="cchk-${t.id}" ${isDone?'checked':''} onchange="corrToggle('${t.id}')">
+      <div class="corr-name">${esc(t.naam)} <span class="t-id" style="margin-left:4px">${esc(t.taak_id)}</span></div>
+      <div style="min-width:260px;flex:1">
+        ${peoplePickerHtml('corr-'+t.id,peopleList(peopleVal),{extra:false,compact:true,durationTarget:'pd-corr-'+t.id})}
+      </div>
+      <div style="min-width:250px">${personDurationBoxHtml('corr-'+t.id,'pd-corr-'+t.id,minutesVal)}</div>
+    </div>`;
+  }).join('');
+  corrView={freq:corrFreq,datum:ctx.datum};
+  initPersonDurationBoxes();
+};
+
+window.corrToggle=(taakId)=>{
+  const chk=document.getElementById('cchk-'+taakId);
+  if(corrData[taakId])corrData[taakId].gedaan=chk.checked;
+};
+
+window.saveCorrTasks=async()=>{
+  const datum=document.getElementById('corr-datum').value;
+  if(!datum){toast('Kies een datum/periode','e');return}
+  const freq=document.getElementById('corr-freq')?.value||corrFreq||'Dagelijks';
+  const ctx=contextForFreq(freq,datum);
+  const defaultUitv=document.getElementById('corr-uitv').value;
+  let saved=0,errors=0;
+  for(const t of allTaken.filter(x=>x.frequentie===freq)){
+    const staat=corrData[t.id];if(!staat)continue;
+    const rawUitv=getPeopleFromPicker('corr-'+t.id)||defaultUitv||'';
+    const pm=getPersonMinutesFromBox('pd-corr-'+t.id);
+    const dur=durationSum(pm);
+    const heeftMinuten=!!dur;
+    const isGedaan=!!staat.gedaan||heeftMinuten;
+    const uitv=effectivePeopleForSave(rawUitv,pm)||defaultUitv||'';
+    const opm=buildNoteWithPersonMinutes(cleanNote(staat.opmerking||''),pm);
+    if(isGedaan){
+      if(!uitv){continue}
+      const rec={
+        taak_id:t.id,
+        datum:ctx.datum,
+        week_nr:freq==='Wekelijks'?ctx.week_nr:null,
+        maand:freq==='Maandelijks'?ctx.maand:null,
+        gedaan:true,
+        uitvoerder:uitv,
+        opmerking:opm,
+        duur_min:dur
+      };
+      if(staat.bestaandId){
+        const{error}=await SB.from('afvinkingen').update({gedaan:true,uitvoerder:uitv,duur_min:dur,opmerking:opm,datum:ctx.datum,week_nr:rec.week_nr,maand:rec.maand}).eq('id',staat.bestaandId);
+        if(error)errors++;else saved++;
+      }else{
+        const{error}=await SB.from('afvinkingen').insert(rec);
+        if(error)errors++;else saved++;
+      }
+    }else if(!isGedaan&&staat.bestaandId){
+      const{error}=await SB.from('afvinkingen').delete().eq('id',staat.bestaandId);
+      if(error)errors++;else saved++;
+    }
+  }
+  if(errors)toast(`${errors} fout(en) bij opslaan`,'e');
+  else toast(`${saved} taken opgeslagen voor ${periodLabel(freq,ctx.datum)}`,'s');
+  if(!errors)clearCorrDraftsForContext(freq,ctx.datum);
+  if(!errors)invalidateReportCache(true);
+  corrSkipCaptureOnClose=!errors;
+  if(!errors)corrView={freq:null,datum:null};
+  closeOv('corr-ov');
+  if(sameContext(freq,ctx.datum)){
+    await fetchAfByFreq(freq);
+    renderCL(freq);renderDashboard();
+  }
+  const histP=document.getElementById('pg-historiek');
+  if(histP.classList.contains('active'))loadHistTab();
+};
+
+/* ─── ACHTERSTAND CHECK ─── */
+async function checkAchterstand(){
+  const banner=document.getElementById('achterstand-banner');if(!banner)return;
+  const gisteren=new Date(now);gisteren.setDate(gisteren.getDate()-1);
+  const gS=toS(gisteren);
+  if(gisteren.getDay()===0||gisteren.getDay()===6){banner.style.display='none';return}
+  const dagIds=allTaken.filter(t=>t.frequentie==='Dagelijks'&&t.actief).map(t=>t.id);
+  if(!dagIds.length){banner.style.display='none';return}
+  const{data}=await SB.from('afvinkingen').select('taak_id').in('taak_id',dagIds).eq('datum',gS).eq('gedaan',true);
+  const gedaanGisteren=(data||[]).length,totaal=dagIds.length;
+  if(gedaanGisteren<totaal){
+    banner.style.display='flex';
+    document.getElementById('achterstand-txt').textContent=`Gisteren (${gisteren.toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'short'})}) waren slechts ${gedaanGisteren}/${totaal} dagelijkse taken gedaan.`;
+    document.getElementById('achterstand-btn').onclick=()=>openCorrModal(gS,'Dagelijks');
+  }else{banner.style.display='none'}
+}
+
+/* ─── RESET ─── */
+window.resetFreq=async(freq)=>{
+  snapshotChecklistDrafts();
+  if(!confirm(`Alle ${freq.toLowerCase()} taken van deze periode resetten?`))return;
+  clearChecklistDraftsForFreq(freq);
+  const afMap=afMapFor(freq);
+  const ids=Object.values(afMap).map(a=>a.id).filter(Boolean);
+  if(ids.length){const{error}=await SB.from('afvinkingen').delete().in('id',ids);if(error){toast('Fout: '+error.message,'e');return}}
+  if(freq==='Dagelijks')dagAf={};else if(freq==='Wekelijks')weekAf={};else if(freq==='Maandelijks')mndAf={};else nodAf={};
+  invalidateReportCache(true);
+  renderCL(freq);renderDashboard();toast(`${freq} checklist gereset`,'i');
+};
+
+/* ─── DASHBOARD ─── */
+function setScore(sfx,done,total,label,color,urenMin){
+  const pct=total>0?Math.round(done/total*100):0;
+  const vEl=document.getElementById('sv-'+sfx);if(!vEl)return;
+  vEl.textContent=total>0?pct+'%':'—';vEl.className='sc-val '+(total>0?pctCls(pct):'none');
+  document.getElementById('ss-'+sfx).textContent=`${done} van ${total} ${label}`;
+  const bEl=document.getElementById('sb-'+sfx);bEl.style.width=pct+'%';bEl.style.background=color;
+  const uEl=document.getElementById('su-'+sfx);
+  if(uEl&&urenMin!=null)uEl.textContent=urenMin>0?`⏱ ${formatUren(urenMin)} besteed`:'';
+}
+function renderDashboard(){
+  const dag=allTaken.filter(t=>t.frequentie==='Dagelijks');
+  const wk=allTaken.filter(t=>t.frequentie==='Wekelijks');
+  const mnd=allTaken.filter(t=>t.frequentie==='Maandelijks');
+  const dD=dag.filter(t=>dagAf[t.id]?.gedaan).length;
+  const dW=wk.filter(t=>weekAf[t.id]?.gedaan).length;
+  const dM=mnd.filter(t=>mndAf[t.id]?.gedaan).length;
+  const tot=dD+dW+dM,totMax=dag.length+wk.length+mnd.length;
+  const dagUren=dag.reduce((s,t)=>s+recordDuration(dagAf[t.id]),0);
+  const totUren=[...Object.values(dagAf),...Object.values(weekAf),...Object.values(mndAf)].reduce((s,a)=>s+recordDuration(a),0);
+  setScore('dag',dD,dag.length,'taken','var(--orange)',dagUren);
+  setScore('week',dW,wk.length,'taken','var(--blue)',null);
+  setScore('mnd',dM,mnd.length,'taken','var(--green)',null);
+  setScore('tot',tot,totMax,'totaal','var(--orange)',totUren);
+  checkAchterstand();
+  // open taken
+  const open=dag.filter(t=>!dagAf[t.id]?.gedaan);
+  const openEl=document.getElementById('dash-open');
+  openEl.innerHTML=open.length===0
+    ?`<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4,13 9,18 20,6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="empty-txt">Alle dagelijkse taken gedaan!</div></div>`
+    :open.map(t=>`<div class="task-row" style="cursor:default"><div class="t-info"><div class="t-name">${t.naam}</div><div class="t-desc">${peopleChips(t.verantwoordelijke)}</div></div><span class="t-id">${t.taak_id}</span></div>`).join('');
+  // ranking
+  const cnt={};[...Object.values(dagAf),...Object.values(weekAf),...Object.values(mndAf)].forEach(a=>{if(a.gedaan&&a.uitvoerder)addPeopleCount(cnt,a.uitvoerder)});
+  const ranked=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  const maxC=ranked[0]?.[1]||1;
+  document.getElementById('dash-rank').innerHTML=ranked.length===0
+    ?'<div class="empty-state"><div class="empty-txt">Nog niemand afgevinkt</div></div>'
+    :ranked.map(([name,c],i)=>`<div class="rank-row"><div class="rank-num">${i+1}</div><div class="rank-av">${name[0]}</div><div class="rank-name">${name}</div><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.round(c/maxC*100)}%;background:var(--orange)"></div></div></div><div class="rank-cnt">${c} taken</div></div>`).join('');
+  // status
+  const makeStatus=(label,done2,total2)=>{
+    const p=total2>0?Math.round(done2/total2*100):0;
+    const cl=pctCls(p);
+    const cols={good:['var(--green-bg)','var(--green-br)','var(--green)'],warn:['var(--yellow-bg)','var(--yellow-br)','var(--yellow)'],bad:['var(--red-bg)','var(--red-br)','var(--red)']};
+    const[bg,br,tc]=cols[cl];
+    return`<div style="background:${bg};border:1px solid ${br};border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:var(--txt2)">${label}</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:${tc}">${total2>0?p+'%':'—'}</span></div>`;
+  };
+  const capStats=buildCapacityStats(capacityRowsCurrentToday(),1);
+  document.getElementById('dash-status').innerHTML=makeStatus('Dagelijks',dD,dag.length)+makeStatus('Wekelijks',dW,wk.length)+makeStatus('Maandelijks',dM,mnd.length)+capacityStatusCard(capStats);
+}
+
+/* ─── TAKENBEHEER ─── */
+const freqBadge={Dagelijks:'b-orange',Wekelijks:'b-blue',Maandelijks:'b-green','Indien nodig':'b-purple',Jaarlijks:'b-yellow'};
+const freqLabel={Dagelijks:'DAG',Wekelijks:'WEEK',Maandelijks:'MND','Indien nodig':'NODIG',Jaarlijks:'JAAR'};
+window.filterT=(f,btn)=>{taakFilter=f;document.querySelectorAll('.flt-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderTakenTable()};
+function renderTakenTable(){
+  const list=taakFilter==='all'?allTaken:allTaken.filter(t=>t.frequentie===taakFilter);
+  const tbody=document.getElementById('t-tbody');
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--txt3);padding:32px;font-family:var(--mono);font-size:11px">Geen taken gevonden</td></tr>`;return}
+  tbody.innerHTML=list.map(t=>`<tr>
+    <td><span class="t-id">${t.taak_id}</span></td>
+    <td><div style="font-weight:500">${t.naam}</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">${t.omschrijving||''}</div></td>
+    <td><span class="badge ${freqBadge[t.frequentie]||'b-gray'}">${freqLabel[t.frequentie]||t.frequentie}</span></td>
+    <td style="font-size:11px;color:var(--txt2)">${peopleChips(t.verantwoordelijke)}</td>
+    <td><span class="badge ${t.prioriteit==='Hoog'?'b-red':'b-gray'}">${t.prioriteit||'Normaal'}</span></td>
+    <td><span class="badge ${t.actief?'b-green':'b-red'}">${t.actief?'Ja':'Nee'}</span></td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn btn-ghost btn-xs" onclick="editTaak('${t.id}')">Bewerk</button>
+      <button class="btn btn-danger btn-xs" onclick="showDelConfirm('${t.id}','${t.naam.replace(/'/g,'')}')">✕</button>
+    </div>
+    <div class="confirm-inline" id="del-${t.id}">
+      <strong>Verwijderen?</strong>
+      <button class="btn btn-danger btn-xs" onclick="delTaak('${t.id}')">Ja</button>
+      <button class="btn btn-ghost btn-xs" onclick="document.getElementById('del-${t.id}').classList.remove('open')">Nee</button>
+    </div></td>
+  </tr>`).join('');
+}
+window.showDelConfirm=(id)=>{event?.stopPropagation();document.getElementById('del-'+id)?.classList.add('open')};
+window.openTaakModal=()=>{
+  editTaakId=null;
+  document.getElementById('taak-ov-title').textContent='Nieuwe taak';
+  ['fi-id','fi-naam','fi-omschr','fi-verantw'].forEach(id=>document.getElementById(id).value='');
+  renderTaakPeoplePicker([]);
+  document.getElementById('fi-freq').value='Dagelijks';
+  document.getElementById('fi-prio').value='Normaal';
+  document.getElementById('fi-actief').value='true';
+  document.getElementById('taak-ov').classList.add('open');
+};
+window.editTaak=id=>{
+  editTaakId=id;const t=allTaken.find(x=>x.id===id);if(!t)return;
+  document.getElementById('taak-ov-title').textContent='Taak bewerken';
+  document.getElementById('fi-id').value=t.taak_id;
+  document.getElementById('fi-naam').value=t.naam;
+  document.getElementById('fi-omschr').value=t.omschrijving||'';
+  document.getElementById('fi-freq').value=t.frequentie;
+  renderTaakPeoplePicker(peopleList(t.verantwoordelijke));
+  document.getElementById('fi-prio').value=t.prioriteit||'Normaal';
+  document.getElementById('fi-actief').value=String(t.actief);
+  document.getElementById('taak-ov').classList.add('open');
+};
+window.saveTaak=async()=>{
+  const rec={taak_id:document.getElementById('fi-id').value.trim(),naam:document.getElementById('fi-naam').value.trim(),omschrijving:document.getElementById('fi-omschr').value.trim(),frequentie:document.getElementById('fi-freq').value,verantwoordelijke:getPeopleFromPicker('taak-verantwoordelijke'),prioriteit:document.getElementById('fi-prio').value,actief:document.getElementById('fi-actief').value==='true'};
+  if(!rec.taak_id||!rec.naam){toast('Vul ID en naam in','e');return}
+  let err;
+  if(editTaakId){({error:err}=await SB.from('taken').update(rec).eq('id',editTaakId))}
+  else{({error:err}=await SB.from('taken').insert(rec))}
+  if(err){toast('Fout: '+err.message,'e');return}
+  closeOv('taak-ov');invalidateReportCache(true);await fetchTaken();
+  await Promise.all([fetchAfByFreq('Dagelijks'),fetchAfByFreq('Wekelijks'),fetchAfByFreq('Maandelijks'),fetchAfByFreq('Indien nodig')]);
+  renderAll();toast(editTaakId?'Taak bijgewerkt!':'Taak toegevoegd!','s');
+};
+window.delTaak=async id=>{
+  await SB.from('taken').delete().eq('id',id);
+  await fetchTaken();renderAll();toast('Taak verwijderd','i');
+};
+
+/* ─── HISTORIEK ─── */
+let histTab='dag';
+function scorePill(p){
+  const[bg,br,tc]=p>=80?['var(--green-bg)','var(--green-br)','var(--green)']:p>=50?['var(--yellow-bg)','var(--yellow-br)','var(--yellow)']:['var(--red-bg)','var(--red-br)','var(--red)'];
+  return`<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:${tc};background:${bg};border:1px solid ${br};padding:2px 8px;border-radius:4px">${p}%</span>`;
+}
+function initHistDates(){
+  const t=new Date(now),v=new Date(now);v.setDate(v.getDate()-29);
+  if(!document.getElementById('hist-tot').value)document.getElementById('hist-tot').value=toS(t);
+  if(!document.getElementById('hist-van').value)document.getElementById('hist-van').value=toS(v);
+}
+window.switchHistTab=(tab,btn)=>{
+  histTab=tab;document.querySelectorAll('[id^="ht-"]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');loadHistTab();
+};
+window.loadHistTab=async()=>{
+  const van=document.getElementById('hist-van').value,tot=document.getElementById('hist-tot').value;
+  if(!van||!tot)return;
+  const tbody=document.getElementById('h-tbody'),thead=document.getElementById('hist-thead');
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3);font-family:var(--mono);font-size:11px">Laden...</td></tr>';
+  document.getElementById('hist-detail').classList.remove('open');
+
+  if(histTab==='dag'){
+    const persF=document.getElementById('hist-persoon')?.value||'';
+    thead.innerHTML='<tr><th>Datum</th><th>Dag</th><th>Gedaan</th><th>Totaal</th><th>Score</th><th>Uren</th></tr>';
+    const dagIds=allTaken.filter(t=>t.frequentie==='Dagelijks').map(t=>t.id);
+    if(!dagIds.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Geen dagelijkse taken</td></tr>';return}
+    let qd=SB.from('afvinkingen').select('datum,gedaan,taak_id,duur_min,uitvoerder,opmerking').in('taak_id',dagIds).gte('datum',van).lte('datum',tot).order('datum',{ascending:false});
+    const{data}=await qd;
+    const byDay={};
+    (data||[]).forEach(a=>{if(persF&&!peopleList(a.uitvoerder).includes(persF))return;if(!byDay[a.datum])byDay[a.datum]={done:0,tot:persF?'-':dagIds.length,uren:0};if(a.gedaan){byDay[a.datum].done++;byDay[a.datum].uren+=recordDuration(a)}});
+    if(!Object.keys(byDay).length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Geen data in deze periode</td></tr>';return}
+    tbody.innerHTML=Object.entries(byDay).sort((a,b)=>b[0].localeCompare(a[0])).map(([datum,v])=>{
+      const p=typeof v.tot==='number'?Math.round(v.done/v.tot*100):null;
+      const d=new Date(datum+'T12:00:00');
+      const urenTxt=v.uren>0?formatUren(v.uren):'—';
+      return`<tr style="cursor:pointer" onclick="loadDetail('dag','${datum}',null,null,'${datum}')" title="Klik voor detail en aanpassen">
+        <td style="font-weight:500">${d.toLocaleDateString('nl-BE',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${datum}</td>
+        <td><span style="font-family:var(--mono);font-weight:600;color:var(--green)">${v.done}</span></td>
+        <td style="color:var(--txt3)">${v.tot}</td>
+        <td>${p!==null?scorePill(p):'—'}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${urenTxt}</td>
+      </tr>`;
+    }).join('');
+
+  }else if(histTab==='week'){
+    const persF2=document.getElementById('hist-persoon')?.value||'';
+    thead.innerHTML='<tr><th>Week</th><th>Jaar</th><th>Gedaan</th><th>Totaal</th><th>Score</th><th>Uren</th></tr>';
+    const wkIds=allTaken.filter(t=>t.frequentie==='Wekelijks').map(t=>t.id);
+    if(!wkIds.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Geen wekelijkse taken</td></tr>';return}
+    let qw=SB.from('afvinkingen').select('week_nr,datum,gedaan,duur_min,uitvoerder,opmerking').in('taak_id',wkIds).gte('datum',van).lte('datum',tot).order('datum',{ascending:false});
+    const{data}=await qw;
+    const byWeek={};
+    (data||[]).forEach(a=>{if(persF2&&!peopleList(a.uitvoerder).includes(persF2))return;if(!a.week_nr)return;const key=`${a.datum.substring(0,4)}-W${String(a.week_nr).padStart(2,'0')}`;if(!byWeek[key])byWeek[key]={done:0,tot:wkIds.length,week_nr:a.week_nr,jaar:a.datum.substring(0,4),datum:a.datum,uren:0};if(a.gedaan){byWeek[key].done++;byWeek[key].uren+=recordDuration(a)}});
+    if(!Object.keys(byWeek).length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--txt3)">Geen data</td></tr>';return}
+    tbody.innerHTML=Object.entries(byWeek).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,v])=>{
+      const p=Math.round(v.done/v.tot*100);
+      return`<tr style="cursor:pointer" onclick="loadDetail('week',null,${v.week_nr},'${v.datum.substring(0,4)}','Week ${v.week_nr} ${v.jaar}')" title="Klik voor detail">
+        <td><span style="font-family:var(--mono);font-weight:600">Week ${v.week_nr}</span></td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${v.jaar}</td>
+        <td><span style="font-family:var(--mono);font-weight:600;color:var(--blue)">${v.done}</span></td>
+        <td style="color:var(--txt3)">${v.tot}</td>
+        <td>${scorePill(p)}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${v.uren>0?formatUren(v.uren):'—'}</td>
+      </tr>`;
+    }).join('');
+
+  }else{
+    const persF3=document.getElementById('hist-persoon')?.value||'';
+    thead.innerHTML='<tr><th>Maand</th><th>Gedaan</th><th>Totaal</th><th>Score</th><th>Uren</th></tr>';
+    const mndIds=allTaken.filter(t=>t.frequentie==='Maandelijks').map(t=>t.id);
+    if(!mndIds.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Geen maandelijkse taken</td></tr>';return}
+    let qm=SB.from('afvinkingen').select('maand,datum,gedaan,duur_min,uitvoerder,opmerking').in('taak_id',mndIds).gte('datum',van).lte('datum',tot).order('maand',{ascending:false});
+    const{data}=await qm;
+    const byMnd={};
+    (data||[]).forEach(a=>{if(persF3&&!peopleList(a.uitvoerder).includes(persF3))return;if(!a.maand)return;if(!byMnd[a.maand])byMnd[a.maand]={done:0,tot:mndIds.length,uren:0};if(a.gedaan){byMnd[a.maand].done++;byMnd[a.maand].uren+=recordDuration(a)}});
+    if(!Object.keys(byMnd).length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--txt3)">Geen data</td></tr>';return}
+    tbody.innerHTML=Object.entries(byMnd).sort((a,b)=>b[0].localeCompare(a[0])).map(([mnd,v])=>{
+      const p=Math.round(v.done/v.tot*100);
+      const[y,m]=mnd.split('-');
+      const naam=new Date(y,m-1,1).toLocaleDateString('nl-BE',{month:'long',year:'numeric'});
+      return`<tr style="cursor:pointer" onclick="loadDetail('mnd',null,null,'${mnd}','${naam}')" title="Klik voor detail">
+        <td style="font-weight:500">${naam}</td>
+        <td><span style="font-family:var(--mono);font-weight:600;color:var(--green)">${v.done}</span></td>
+        <td style="color:var(--txt3)">${v.tot}</td>
+        <td>${scorePill(p)}</td>
+        <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${v.uren>0?formatUren(v.uren):'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+};
+
+/* ─── DETAIL PANEL (historiek) — met inline BEWERKEN ─── */
+window.loadDetail=async(type,datum,week_nr,extra,label)=>{
+  const panel=document.getElementById('hist-detail');
+  const tbody=document.getElementById('detail-tbody');
+  document.getElementById('detail-title').textContent=`Detail — ${label}`;
+  panel.classList.add('open');
+  tbody.innerHTML='<tr><td colspan="6" style="padding:16px;color:var(--txt3);font-size:11px">Laden...</td></tr>';
+  // sla context op voor "Afvinken voor deze periode"
+  currentDetailContext={type,datum,week_nr,extra,label};
+  currentDetailDatum=datum;
+
+  let ids,q;
+  if(type==='dag'){
+    ids=allTaken.filter(t=>t.frequentie==='Dagelijks').map(t=>t.id);
+    q=SB.from('afvinkingen').select('*,taken(naam,taak_id)').in('taak_id',ids).eq('datum',datum);
+  }else if(type==='week'){
+    ids=allTaken.filter(t=>t.frequentie==='Wekelijks').map(t=>t.id);
+    q=SB.from('afvinkingen').select('*,taken(naam,taak_id)').in('taak_id',ids).eq('week_nr',week_nr).like('datum',extra+'%');
+  }else{
+    ids=allTaken.filter(t=>t.frequentie==='Maandelijks').map(t=>t.id);
+    q=SB.from('afvinkingen').select('*,taken(naam,taak_id)').in('taak_id',ids).eq('maand',extra);
+  }
+  const{data:af}=await q.order('created_at');
+  const afMap={};(af||[]).forEach(a=>afMap[a.taak_id]=a);
+  const taken=allTaken.filter(t=>ids.includes(t.id));
+
+  tbody.innerHTML=taken.map(t=>{
+    const a=afMap[t.id];
+    const isDone=!!a?.gedaan;
+    const ts='—';
+    const durMin=recordDuration(a);
+    const durTxt=durMin?formatUren(durMin):'—';
+    return`<tr>
+      <td><div style="font-weight:500;font-size:12px">${t.naam}</div><span class="t-id">${t.taak_id}</span></td>
+      <td><span class="badge ${isDone?'b-green':'b-red'}">${isDone?'Ja':'Nee'}</span></td>
+      <td id="det-uitv-${t.id}" style="font-size:12px">${peopleChips(a?.uitvoerder,true)}</td>
+      <td id="det-dur-${t.id}" style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${durTxt}${personDurationHtml(a)}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${ts}</td>
+      <td>
+        ${isDone?`<div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-xs" onclick="toggleDetailEdit('${t.id}','${a.id}','${a.uitvoerder||''}',${a.duur_min||0})">✏ Bewerk</button>
+          <button class="btn btn-danger btn-xs" onclick="showDetailUncheck('${t.id}','${a.id}','${type}','${datum||''}',${week_nr||'null'},'${extra||''}','${label}')">↩</button>
+        </div>
+        <div class="confirm-inline" id="det-unc-${t.id}">
+          <strong>Ongedaan maken?</strong>
+          <button class="btn btn-danger btn-xs" onclick="detailUncheck('${a.id}','${type}','${datum||''}',${week_nr||'null'},'${extra||''}','${label}')">Ja</button>
+          <button class="btn btn-ghost btn-xs" onclick="document.getElementById('det-unc-${t.id}').classList.remove('open')">Nee</button>
+        </div>
+        <div class="confirm-inline" id="det-edit-${t.id}" style="background:var(--blue-bg);border-color:var(--blue-br);color:var(--blue)">
+          <div class="detail-edit-row">
+            ${peoplePickerHtml('detail-'+t.id,peopleList(a.uitvoerder),{extra:false,compact:true,durationTarget:'pd-detail-'+t.id})}
+            ${personDurationBoxHtml('detail-'+t.id,'pd-detail-'+t.id,recordPersonMinutes(a))}
+            <input type="hidden" id="det-e-note-${t.id}" value="${esc(cleanNote(a.opmerking||''))}">
+            <button class="btn btn-success btn-xs" onclick="saveDetailEdit('${a.id}','${t.id}','${type}','${datum||''}',${week_nr||'null'},'${extra||''}','${label}')">💾</button>
+            <button class="btn btn-ghost btn-xs" onclick="document.getElementById('det-edit-${t.id}').classList.remove('open')">✕</button>
+          </div>
+        </div>`
+        :`<button class="btn btn-success btn-xs" onclick="openCorrFromDetail()">+ Invoeren</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+  initPersonDurationBoxes();
+};
+
+window.toggleDetailEdit=(taakId,afId,uitv,dur)=>{
+  event?.stopPropagation();
+  document.getElementById('det-edit-'+taakId)?.classList.add('open');
+};
+window.showDetailUncheck=(taakId)=>{event?.stopPropagation();document.getElementById('det-unc-'+taakId)?.classList.add('open')};
+
+window.saveDetailEdit=async(afId,taakId,type,datum,week_nr,extra,label)=>{
+  event?.stopPropagation();
+  const naam=getPeopleFromPicker('detail-'+taakId);
+  const pm=getPersonMinutesFromBox('pd-detail-'+taakId);
+  if(!validatePersonMinutes(naam,pm))return;
+  const dur=durationSum(pm);
+  const note=document.getElementById('det-e-note-'+taakId)?.value||'';
+  const opm=buildNoteWithPersonMinutes(note,pm);
+  const{error}=await SB.from('afvinkingen').update({uitvoerder:naam,duur_min:dur,opmerking:opm}).eq('id',afId);
+  if(error){toast('Fout: '+error.message,'e');return}
+  toast('✏ Bijgewerkt','s');
+  invalidateReportCache(true);
+  // update cell direct
+  document.getElementById('det-uitv-'+taakId).innerHTML=peopleChips(naam,true);
+  document.getElementById('det-dur-'+taakId).innerHTML=(dur?formatUren(dur):'—')+(personDurationMapToPlain(pm)?`<div class="t-dur-breakdown">${esc(personDurationMapToPlain(pm))}</div>`:'');
+  document.getElementById('det-edit-'+taakId)?.classList.remove('open');
+  loadHistTab();
+};
+
+window.detailUncheck=async(afId,type,datum,week_nr,extra,label)=>{
+  const{error}=await SB.from('afvinkingen').delete().eq('id',afId);
+  if(error){toast('Fout: '+error.message,'e');return}
+  toast('Afvinking verwijderd','i');
+  invalidateReportCache(true);
+  await Promise.all([fetchAfByFreq('Dagelijks'),fetchAfByFreq('Wekelijks'),fetchAfByFreq('Maandelijks'),fetchAfByFreq('Indien nodig')]);
+  renderAll();
+  loadDetail(type,datum,week_nr,extra,label);
+  loadHistTab();
+};
+
+/* ─── CSV EXPORT ─── */
+window.exportCSV=async()=>{
+  const van=document.getElementById('hist-van').value,tot=document.getElementById('hist-tot').value;
+  if(!van||!tot){toast('Stel eerst een datumrange in','e');return}
+  toast('CSV wordt opgemaakt...','i');
+  const{data}=await SB.from('afvinkingen').select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,taken(naam,taak_id,frequentie)').gte('datum',van).lte('datum',tot).order('datum',{ascending:false}).limit(2000);
+  if(!data?.length){toast('Geen data om te exporteren','e');return}
+  const rows=[['Werkdatum','Taak-ID','Taaknaam','Frequentie','Scoreperiode','Gedaan','Uitvoerder','Duur totaal (min)','Duur per persoon','Opmerking','Aangemaakt']];
+  data.forEach(a=>rows.push([a.datum,a.taken?.taak_id||'',a.taken?.naam||'',a.taken?.frequentie||'',reportScorePeriodLabel(a),a.gedaan?'Ja':'Nee',peopleText(reportPeopleForRecord(a)),recordDuration(a)||'',personDurationPlain(a),cleanNote(a.opmerking).replace(/,/g,';'),'']));
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`stockteam_${van}_${tot}.csv`;a.click();
+  URL.revokeObjectURL(url);toast('CSV gedownload!','s');
+};
+
+
+/* ─── PDF RAPPORTEN ─── */
+let reportCache=null;
+function invalidateReportCache(autoRefresh=false){
+  reportCache=null;
+  const pg=document.getElementById('pg-rapporten');
+  if(autoRefresh&&pg?.classList.contains('active')&&typeof window.renderReportPreview==='function'){
+    setTimeout(()=>window.renderReportPreview(),0);
+  }
+}
+let jsPDFCtor=null;
+let autoTableFn=null;
+
+function addDays(date,n){const d=new Date(date);d.setDate(d.getDate()+n);return d}
+function parseDateS(s){return new Date(s+'T12:00:00')}
+function lastDayOfMonthS(ym){const[y,m]=ym.split('-').map(Number);return toS(new Date(y,m,0))}
+function daysBetween(van,tot){const out=[];let d=parseDateS(van);const end=parseDateS(tot);while(d<=end){out.push(toS(d));d=addDays(d,1)}return out}
+function uniqueWeekKeys(van,tot){const keys=new Set();daysBetween(van,tot).forEach(ds=>{const d=parseDateS(ds);keys.add(`${d.getFullYear()}-W${weekNr(d)}`)});return [...keys]}
+function uniqueMonthKeys(van,tot){const keys=new Set();daysBetween(van,tot).forEach(ds=>keys.add(ds.slice(0,7)));return [...keys]}
+function scoreP(n,d){return d>0?Math.round(n/d*100):0}
+function safePdfText(v){return String(v??'').replace(/\s+/g,' ').trim()}
+
+function reportScorePeriodLabel(a){
+  const f=a?.taken?.frequentie||'';
+  if(f==='Wekelijks')return `Week ${a.week_nr||weekNr(parseDateS(a.datum))}`;
+  if(f==='Maandelijks')return a.maand||a.datum?.slice(0,7)||'—';
+  if(f==='Dagelijks')return a.datum||'—';
+  return 'Niet-score';
+}
+
+window.rptUpdateMode=()=>{
+  const mode=document.getElementById('rpt-mode')?.value||'week';
+  document.querySelectorAll('.rpt-field').forEach(el=>el.style.display='none');
+  const show=sel=>document.querySelector(`[data-rpt-field="${sel}"]`).style.display='flex';
+  if(mode==='dag'){show('date');document.getElementById('rpt-date-lbl').textContent='Datum'}
+  else if(mode==='week'){show('date');document.getElementById('rpt-date-lbl').textContent='Week van datum'}
+  else if(mode==='maand'){show('month')}
+  else{show('van');show('tot')}
+};
+
+function initReportPage(){
+  const rd=document.getElementById('rpt-date'),rm=document.getElementById('rpt-month'),rv=document.getElementById('rpt-van'),rt=document.getElementById('rpt-tot');
+  if(rd&&!rd.value)rd.value=todayS;
+  if(rm&&!rm.value)rm.value=maandS;
+  if(rv&&!rv.value)rv.value=weekStartS();
+  if(rt&&!rt.value)rt.value=todayS;
+  rptUpdateMode();
+  if(document.getElementById('pg-rapporten')?.classList.contains('active')&&typeof window.renderReportPreview==='function')setTimeout(()=>window.renderReportPreview(),0);
+}
+
+function getReportRange(){
+  const mode=document.getElementById('rpt-mode')?.value||'week';
+  if(mode==='dag'){
+    const d=document.getElementById('rpt-date').value||todayS;
+    return{mode,van:d,tot:d,label:`Dagrapport ${parseDateS(d).toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}`,slug:`dag_${d}`};
+  }
+  if(mode==='week'){
+    const base=parseDateS(document.getElementById('rpt-date').value||todayS);
+    const van=weekStartS(base);const tot=toS(addDays(parseDateS(van),6));
+    return{mode,van,tot,label:`Weekrapport week ${weekNr(base)} · ${van} t/m ${tot}`,slug:`week_${weekNr(base)}_${van}_${tot}`};
+  }
+  if(mode==='maand'){
+    const ym=document.getElementById('rpt-month').value||maandS;
+    const van=`${ym}-01`,tot=lastDayOfMonthS(ym);
+    const label=parseDateS(van).toLocaleDateString('nl-BE',{month:'long',year:'numeric'});
+    return{mode,van,tot,label:`Maandrapport ${label}`,slug:`maand_${ym}`};
+  }
+  const van=document.getElementById('rpt-van').value||weekStartS();
+  const tot=document.getElementById('rpt-tot').value||todayS;
+  const a=van<=tot?van:tot,b=van<=tot?tot:van;
+  return{mode,van:a,tot:b,label:`Perioderapport ${a} t/m ${b}`,slug:`periode_${a}_${b}`};
+}
+
+async function fetchReportRows(range){
+  const{data,error}=await SB.from('afvinkingen')
+    .select('datum,week_nr,maand,gedaan,uitvoerder,duur_min,opmerking,taak_id,taken(naam,taak_id,frequentie,verantwoordelijke,prioriteit)')
+    .gte('datum',range.van).lte('datum',range.tot).order('datum',{ascending:true}).limit(5000);
+  if(error)throw error;
+  return data||[];
+}
+
+function buildReportStats(rows,range){
+  const dates=daysBetween(range.van,range.tot);
+  const weeks=range.mode==='dag'?[]:uniqueWeekKeys(range.van,range.tot);
+  const months=(range.mode==='dag'||range.mode==='week')?[]:uniqueMonthKeys(range.van,range.tot);
+  const activeDaily=allTaken.filter(t=>t.actief!==false&&t.frequentie==='Dagelijks').length;
+  const activeWeekly=allTaken.filter(t=>t.actief!==false&&t.frequentie==='Wekelijks').length;
+  const activeMonthly=allTaken.filter(t=>t.actief!==false&&t.frequentie==='Maandelijks').length;
+  const expected={
+    'Dagelijks':activeDaily*dates.length,
+    'Wekelijks':activeWeekly*weeks.length,
+    'Maandelijks':activeMonthly*months.length,
+    'Indien nodig':0
+  };
+  // workRows = alle tijdregistraties op hun echte werkdatum.
+  // doneRows = unieke score-items. Een wekelijkse taak telt voor de score maar één keer per week,
+  // ook als er op meerdere dagen aan gewerkt werd.
+  const workRows=rows.filter(a=>a.gedaan);
+  const uniqueDone={};
+  workRows.forEach(a=>{
+    const f=a.taken?.frequentie||'Onbekend';
+    let key=`${f}:${a.taak_id}:${a.datum}`;
+    if(f==='Wekelijks'){
+      const d=parseDateS(a.datum);
+      key=`${f}:${a.taak_id}:${d.getFullYear()}-W${a.week_nr||weekNr(d)}`;
+    }
+    if(f==='Maandelijks')key=`${f}:${a.taak_id}:${a.maand||a.datum?.slice(0,7)}`;
+    uniqueDone[key]=a;
+  });
+  const doneRows=Object.values(uniqueDone);
+  const done={'Dagelijks':0,'Wekelijks':0,'Maandelijks':0,'Indien nodig':0};
+  doneRows.forEach(a=>{const f=a.taken?.frequentie||'Indien nodig';done[f]=(done[f]||0)+1});
+  const sessionDone={'Dagelijks':0,'Wekelijks':0,'Maandelijks':0,'Indien nodig':0};
+  workRows.forEach(a=>{const f=a.taken?.frequentie||'Indien nodig';sessionDone[f]=(sessionDone[f]||0)+1});
+  const durByFreq={'Dagelijks':0,'Wekelijks':0,'Maandelijks':0,'Indien nodig':0};
+  workRows.forEach(a=>{const f=a.taken?.frequentie||'Indien nodig';durByFreq[f]=(durByFreq[f]||0)+recordDuration(a)});
+  const expectedTotal=expected.Dagelijks+expected.Wekelijks+expected.Maandelijks;
+  const doneTotal=done.Dagelijks+done.Wekelijks+done.Maandelijks;
+  const personCount={};
+  const personDur={};
+  workRows.forEach(a=>{
+    const persons=reportPeopleForRecord(a);
+    persons.forEach(n=>{personCount[n]=(personCount[n]||0)+1});
+    addPeopleDuration(personDur,a);
+  });
+  const byDay={};
+  dates.forEach(ds=>byDay[ds]={datum:ds,doneDaily:0,doneAll:0,duur:0,byType:{}});
+  workRows.forEach(a=>{
+    if(!byDay[a.datum])byDay[a.datum]={datum:a.datum,doneDaily:0,doneAll:0,duur:0,byType:{}};
+    byDay[a.datum].doneAll++;
+    byDay[a.datum].duur+=recordDuration(a);
+    const f=a.taken?.frequentie||'Indien nodig';
+    byDay[a.datum].byType[f]=(byDay[a.datum].byType[f]||0)+1;
+    if(f==='Dagelijks')byDay[a.datum].doneDaily++;
+  });
+  const freqRows=['Dagelijks','Wekelijks','Maandelijks','Indien nodig'].map(f=>({freq:f,done:done[f]||0,registraties:sessionDone[f]||0,duur:durByFreq[f]||0,expected:expected[f]||0,pct:f==='Indien nodig'?null:scoreP(done[f]||0,expected[f]||0)}));
+  const persons=Object.entries(personCount).sort((a,b)=>(personDur[b[0]]||0)-(personDur[a[0]]||0)||b[1]-a[1]).map(([naam,aantal])=>({naam,aantal,duur:personDur[naam]||0}));
+  const totalDur=workRows.reduce((s,a)=>s+recordDuration(a),0);
+  const capDays=Math.max(1,workdayCountBetween(range.van,range.tot));
+  const capacityStats=buildCapacityStats(workRows,capDays);
+  const openDay=range.mode==='dag'?allTaken.filter(t=>t.actief!==false&&t.frequentie==='Dagelijks'&&!doneRows.some(a=>a.taken?.frequentie==='Dagelijks'&&a.taak_id===t.id&&a.datum===range.van)):[];
+  return{range,rows,workRows,doneRows,dates,weeks,months,expected,done,sessionDone,durByFreq,expectedTotal,doneTotal,pct:scoreP(doneTotal,expectedTotal),persons,totalDur,byDay:Object.values(byDay),freqRows,openDay,capacityStats};
+}
+
+async function buildReport(range){
+  const rows=await fetchReportRows(range);
+  return buildReportStats(rows,range);
+}
+
+function makeBarChartImage(labels,values,title,opts={}){
+  const canvas=document.createElement('canvas');canvas.width=1100;canvas.height=520;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#111827';ctx.font='600 26px -apple-system,Arial,sans-serif';ctx.fillText(title,42,48);
+  const max=Math.max(1,...values);
+  const left=70,right=38,top=86,bottom=86;
+  const w=canvas.width-left-right,h=canvas.height-top-bottom;
+  // grid lines
+  ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1.5;
+  for(let i=0;i<=4;i++){
+    const y=top+h-(h*i/4);
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+w,y);ctx.stroke();
+    ctx.fillStyle='#9ca3af';ctx.font='18px "Courier New",monospace';
+    ctx.textAlign='right';ctx.fillText(String(Math.round(max*i/4)),left-8,y+6);
+  }
+  ctx.textAlign='left';
+  const gap=14;const bw=Math.max(20,(w-gap*(labels.length+1))/Math.max(labels.length,1));
+  const barColor=opts.color||'#ea580c';
+  labels.forEach((lab,i)=>{
+    const val=values[i]||0;
+    const x=left+gap+i*(bw+gap);
+    const bh=(val/max)*h;
+    const y=top+h-bh;
+    // bar with gradient effect
+    const grad=ctx.createLinearGradient(x,y,x,y+bh);
+    grad.addColorStop(0,barColor);
+    grad.addColorStop(1,barColor+'bb');
+    ctx.fillStyle=grad;ctx.fillRect(x,y,bw,bh);
+    // value label
+    ctx.fillStyle='#111827';ctx.font='600 18px "Courier New",monospace';
+    ctx.textAlign='center';ctx.fillText(String(val),x+bw/2,y-10);
+    // x-axis label
+    ctx.save();
+    ctx.translate(x+bw/2,top+h+24);
+    ctx.rotate(labels.length>8?-0.52:0);
+    ctx.fillStyle='#4b5563';
+    ctx.font='17px -apple-system,Arial,sans-serif';
+    ctx.fillText(String(lab).slice(0,18),0,0);
+    ctx.restore();
+  });
+  ctx.textAlign='left';
+  return canvas.toDataURL('image/png',0.95);
+}
+
+function makeLineChartImage(points,title){
+  const canvas=document.createElement('canvas');canvas.width=1100;canvas.height=520;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#111827';ctx.font='600 26px -apple-system,Arial,sans-serif';ctx.fillText(title,42,48);
+  const labels=points.map(p=>p.label),values=points.map(p=>p.value);
+  const max=Math.max(100,...values),left=70,right=38,top=86,bottom=86,w=canvas.width-left-right,h=canvas.height-top-bottom;
+  // grid + y labels
+  ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1.5;
+  for(let i=0;i<=4;i++){
+    const y=top+h-(h*i/4);
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+w,y);ctx.stroke();
+    ctx.fillStyle='#9ca3af';ctx.font='17px "Courier New",monospace';
+    ctx.textAlign='right';ctx.fillText(`${Math.round(max*i/4)}%`,left-6,y+6);
+  }
+  // area fill
+  const step=values.length>1?w/(values.length-1):w;
+  ctx.fillStyle='rgba(37,99,235,.08)';ctx.beginPath();
+  values.forEach((v,i)=>{const x=left+i*step,y=top+h-(v/max)*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.lineTo(left+(values.length-1)*step,top+h);ctx.lineTo(left,top+h);ctx.closePath();ctx.fill();
+  // line
+  ctx.strokeStyle='#2563eb';ctx.lineWidth=4;ctx.lineJoin='round';ctx.beginPath();
+  values.forEach((v,i)=>{const x=left+i*step,y=top+h-(v/max)*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.stroke();
+  // dots
+  values.forEach((v,i)=>{
+    const x=left+i*step,y=top+h-(v/max)*h;
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#2563eb';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+  });
+  // x-axis labels
+  const skip=Math.max(1,Math.ceil(labels.length/12));
+  labels.forEach((lab,i)=>{
+    if(i%skip!==0&&i!==labels.length-1)return;
+    const x=left+i*step;
+    ctx.save();ctx.translate(x,top+h+26);ctx.rotate(-0.42);
+    ctx.fillStyle='#4b5563';ctx.font='16px -apple-system,Arial,sans-serif';
+    ctx.textAlign='right';ctx.fillText(lab,0,0);ctx.restore();
+  });
+  return canvas.toDataURL('image/png',0.95);
+}
+
+function renderMiniTable(head,body){
+  return `<table class="report-mini-table"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+window.renderReportPreview=async()=>{
+  try{
+    const range=getReportRange();
+    const box=document.getElementById('rpt-preview');
+    box.innerHTML='<div class="rpt-loading">Rapportdata laden...</div>';
+    const report=await buildReport(range);reportCache=report;
+    const freqBody=report.freqRows.map(r=>[r.freq,`<strong>${r.done}</strong>`,r.expected||'—',`<strong>${r.registraties}</strong>`,r.duur?formatUren(r.duur):'—',r.pct===null?'—':scorePill(r.pct)]);
+    const peopleBody=report.persons.slice(0,8).map(p=>[peopleChips(p.naam,true),`<strong>${p.aantal}</strong>`,p.duur?formatUren(p.duur):'—']);
+    const capBody=report.capacityStats.list.map(p=>[peopleChips(p.naam,true),formatUren(p.used)||'0min',formatUren(p.target),p.remaining?formatUren(p.remaining)+' tekort':(p.over?formatUren(p.over)+' over':'benut'),scorePill(p.pct)]);
+    const freqChart=makeBarChartImage(report.freqRows.map(r=>r.freq.replace('Indien nodig','Nodig')),report.freqRows.map(r=>r.done),'Afgevinkte taken per type');
+    const personChart=makeBarChartImage(report.persons.slice(0,8).map(p=>p.naam),report.persons.slice(0,8).map(p=>Math.round((p.duur||0)/60*10)/10),'Uren per uitvoerder',{color:'#16a34a'});
+    const scoreCls=pctCls(report.pct);
+    box.innerHTML=`
+      <div class="report-note"><strong>Nieuwe indeling:</strong> elke registratie staat op de werkdatum van de papieren. Wekelijkse/maandelijkse taken blijven in hun type staan voor de score, maar verschijnen ook in het dagrapport van de dag waarop eraan gewerkt werd.</div>
+      <div class="report-kpis">
+        <div class="report-kpi"><div class="report-kpi-label">Periode</div><div class="report-kpi-value" style="font-size:17px;letter-spacing:0">${esc(report.range.van)} → ${esc(report.range.tot)}</div><div class="report-kpi-sub">${esc(report.range.label)}</div></div>
+        <div class="report-kpi"><div class="report-kpi-label">Score</div><div class="report-kpi-value ${scoreCls}">${report.pct}%</div><div class="report-kpi-sub">${report.doneTotal}/${report.expectedTotal} geplande taken</div></div>
+        <div class="report-kpi"><div class="report-kpi-label">Afgevinkt</div><div class="report-kpi-value">${report.doneRows.length}</div><div class="report-kpi-sub">incl. indien-nodig taken</div></div>
+        <div class="report-kpi"><div class="report-kpi-label">Duur</div><div class="report-kpi-value" style="font-size:20px">${report.totalDur?formatUren(report.totalDur):'—'}</div><div class="report-kpi-sub">geregistreerde tijd</div></div>
+        <div class="report-kpi"><div class="report-kpi-label">Benutting</div><div class="report-kpi-value ${report.capacityStats.cls}">${report.capacityStats.totalPct}%</div><div class="report-kpi-sub">${formatUren(report.capacityStats.totalUsed)||'0min'} / ${formatUren(report.capacityStats.totalTarget)||'0min'}</div></div>
+      </div>
+      <div class="report-grid">
+        <div class="card"><div class="card-hd"><div class="card-title">Grafiek · afvinkingen per type</div></div><div class="card-body"><img class="report-chart-img" src="${freqChart}" alt="grafiek per type"></div></div>
+        <div class="card"><div class="card-hd"><div class="card-title">Grafiek · uren per uitvoerder</div></div><div class="card-body"><img class="report-chart-img" src="${personChart}" alt="grafiek uren uitvoerders"></div></div>
+      </div>
+      <div class="report-grid">
+        <div class="card"><div class="card-hd"><div class="card-title">Score per type</div></div><div class="card-body">${renderMiniTable(['Type','Gedaan','Verwacht','Score'],freqBody)}</div></div>
+        <div class="card"><div class="card-hd"><div class="card-title">Top uitvoerders</div></div><div class="card-body">${peopleBody.length?renderMiniTable(['Uitvoerder','Taken','Duur'],peopleBody):'<div class="empty-state"><div class="empty-txt">Geen uitvoerders</div></div>'}</div></div>
+      </div>
+      <div class="card"><div class="card-hd"><div class="card-title">Benutting per persoon · norm 7,4u/dag</div><span class="report-muted">Doel: ${report.capacityStats.days} werkdag(en)</span></div><div class="card-body">${capBody.length?renderMiniTable(['Uitvoerder','Geregistreerd','Doel','Status','Benutting'],capBody):'<div class="empty-state"><div class="empty-txt">Geen actieve teamleden</div></div>'}</div></div>
+      <div class="card"><div class="card-hd"><div class="card-title">Detailregels op werkdatum</div><span class="report-muted">${report.workRows.length} tijdregels</span></div><div class="card-body">${renderMiniTable(['Werkdatum','Taak','Type','Scoreperiode','Uitvoerder','Duur'],report.workRows.slice(0,30).map(a=>[a.datum,`${esc(a.taken?.taak_id||'')} · ${esc(a.taken?.naam||'')}`,a.taken?.frequentie||'—',reportScorePeriodLabel(a),peopleChips(reportPeopleForRecord(a),true),recordDuration(a)?formatUren(recordDuration(a)):'—']))}${report.workRows.length>30?'<div class="report-muted" style="margin-top:8px">Preview toont eerste 30 regels. De PDF bevat de volledige tabel.</div>':''}</div></div>
+    `;
+    toast('Voorbeeld opgebouwd','s');
+  }catch(e){toast('Rapportfout: '+e.message,'e');console.error(e)}
+};
+
+async function loadPdfLibs(){
+  if(jsPDFCtor&&autoTableFn)return;
+  // Both imports use ?deps=jspdf@2.5.1 to share the SAME jsPDF instance.
+  // Without this, esm.sh gives separate copies and autoTable patches the wrong prototype.
+  const[jsPDFMod,autoMod]=await Promise.all([
+    import('https://esm.sh/jspdf@2.5.1'),
+    import('https://esm.sh/jspdf-autotable@3.8.4?deps=jspdf@2.5.1')
+  ]);
+  jsPDFCtor=jsPDFMod.jsPDF||jsPDFMod.default;
+  if(!jsPDFCtor)throw new Error('jsPDF kon niet worden geladen');
+  // Use the function API: autoTable(doc, opts) — always works regardless of prototype state.
+  const fn=autoMod.default||autoMod.autoTable;
+  if(typeof fn!=='function')throw new Error('autoTable kon niet worden geladen');
+  autoTableFn=(doc,opts)=>fn(doc,opts);
+}
+
+function docTable(doc,head,body,startY,opts={}){
+  autoTableFn(doc,{
+    startY,
+    head:[head],
+    body:body.map(r=>r.map(c=>safePdfText(c))),
+    theme:'grid',
+    styles:{fontSize:8,cellPadding:2.2,overflow:'linebreak'},
+    headStyles:{fillColor:[17,24,39],textColor:255,fontSize:8},
+    alternateRowStyles:{fillColor:[249,250,251]},
+    margin:{left:14,right:14},
+    ...opts
+  });
+  return doc.lastAutoTable?.finalY||startY+20;
+}
+
+function pdfHeader(doc,report){
+  const w=doc.internal.pageSize.getWidth();
+  doc.setFillColor(234,88,12);doc.rect(0,0,w,20,'F');
+  doc.setTextColor(255);doc.setFontSize(16);doc.setFont(undefined,'bold');doc.text('ST·OPS · Visueel rapport',14,13);
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(report.range.label,w-14,13,{align:'right'});
+  doc.setTextColor(17,24,39);
+}
+function pdfFooter(doc){
+  const pages=doc.getNumberOfPages(),w=doc.internal.pageSize.getWidth(),h=doc.internal.pageSize.getHeight();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);doc.setDrawColor(229,231,235);doc.line(14,h-12,w-14,h-12);
+    doc.setFontSize(8);doc.setTextColor(156,163,175);doc.text(`Gegenereerd op ${new Date().toLocaleString('nl-BE')} · pagina ${i}/${pages}`,14,h-7);
+  }
+}
+function pdfKpi(doc,x,y,w,label,value,sub,color=[17,24,39]){
+  doc.setDrawColor(226,229,235);doc.setFillColor(249,250,251);doc.roundedRect(x,y,w,25,2,2,'FD');
+  doc.setFontSize(7);doc.setTextColor(156,163,175);doc.setFont(undefined,'bold');doc.text(label.toUpperCase(),x+4,y+6);
+  doc.setFontSize(15);doc.setTextColor(...color);doc.text(String(value),x+4,y+15);
+  doc.setFontSize(7);doc.setTextColor(107,114,128);doc.setFont(undefined,'normal');doc.text(String(sub||''),x+4,y+21);
+}
+function ensurePdfSpace(doc,y,need=40){const h=doc.internal.pageSize.getHeight();if(y+need>h-18){doc.addPage();return 28}return y}
+function sectionTitle(doc,title,y){y=ensurePdfSpace(doc,y,16);doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(17,24,39);doc.text(title,14,y);return y+5}
+
+window.downloadReportPdf=async()=>{
+  const btn=document.querySelector('[onclick="downloadReportPdf()"]');
+  const origTxt=btn?.textContent||'PDF downloaden';
+  try{
+    if(btn){btn.textContent='PDF laden...';btn.disabled=true}
+    toast('PDF rapport wordt gemaakt...','i');
+    const range=getReportRange();
+    const report=await buildReport(range);
+    reportCache=report;
+    await loadPdfLibs();
+    const doc=new jsPDFCtor({orientation:'portrait',unit:'mm',format:'a4'});
+    pdfHeader(doc,report);
+    let y=30;
+    doc.setFontSize(10);doc.setTextColor(75,85,99);doc.text(`Periode: ${report.range.van} t/m ${report.range.tot}`,14,y);y+=8;
+    const kW=(210-28-9)/4;
+    pdfKpi(doc,14,y,kW,'Score',`${report.pct}%`,`${report.doneTotal}/${report.expectedTotal} gepland`,report.pct>=80?[22,163,74]:report.pct>=50?[202,138,4]:[220,38,38]);
+    pdfKpi(doc,14+kW+3,y,kW,'Tijdregels',report.workRows.length,'werkdatumregels',[17,24,39]);
+    pdfKpi(doc,14+(kW+3)*2,y,kW,'Duur',report.totalDur?formatUren(report.totalDur):'—','geregistreerd',[37,99,235]);
+    pdfKpi(doc,14+(kW+3)*3,y,kW,'Benutting',`${report.capacityStats.totalPct}%`,`${formatUren(report.capacityStats.totalUsed)||'0min'} / ${formatUren(report.capacityStats.totalTarget)||'0min'}`,[124,58,237]);
+    y+=34;
+    const freqChart=makeBarChartImage(report.freqRows.map(r=>r.freq.replace('Indien nodig','Nodig')),report.freqRows.map(r=>r.done),'Afgevinkte taken per type');
+    doc.addImage(freqChart,'PNG',14,y,182,78);y+=84;
+    if(report.persons.length){
+      y=ensurePdfSpace(doc,y,85);
+      const pChart=makeBarChartImage(report.persons.slice(0,10).map(p=>p.naam),report.persons.slice(0,10).map(p=>Math.round((p.duur||0)/60*10)/10),'Uren per uitvoerder',{color:'#16a34a'});
+      doc.addImage(pChart,'PNG',14,y,182,78);y+=84;
+    }
+    if(report.byDay.length>1){
+      y=ensurePdfSpace(doc,y,85);
+      const points=report.byDay.map(d=>({label:d.datum.slice(5),value:scoreP(d.doneDaily,allTaken.filter(t=>t.frequentie==='Dagelijks'&&t.actief!==false).length)}));
+      const line=makeLineChartImage(points,'Dagelijkse score evolutie');
+      doc.addImage(line,'PNG',14,y,182,78);y+=84;
+    }
+    y=sectionTitle(doc,'Samenvatting per type',y);
+    y=docTable(doc,['Type','Score-items','Verwacht','Tijdregels','Duur','Score'],report.freqRows.map(r=>[r.freq,r.done,r.expected||'—',r.registraties,r.duur?formatUren(r.duur):'—',r.pct===null?'—':`${r.pct}%`]),y);
+    if(report.persons.length){
+      y=sectionTitle(doc,'Uitvoerders',y+8);
+      y=docTable(doc,['Uitvoerder','Tijdregels','Duur'],report.persons.map(p=>[p.naam,p.aantal,p.duur?formatUren(p.duur):'—']),y);
+    }
+    if(report.capacityStats?.list?.length){
+      y=sectionTitle(doc,'Benutting per persoon · norm 7,4u/dag',y+8);
+      y=docTable(doc,['Uitvoerder','Geregistreerd','Doel','Status','Benutting'],report.capacityStats.list.map(p=>[p.naam,formatUren(p.used)||'0min',formatUren(p.target),p.remaining?formatUren(p.remaining)+' tekort':(p.over?formatUren(p.over)+' over':'benut'),`${p.pct}%`]),y);
+    }
+    if(report.byDay.length>1){
+      y=sectionTitle(doc,'Score per dag',y+8);
+      const activeDaily=allTaken.filter(t=>t.frequentie==='Dagelijks'&&t.actief!==false).length;
+      y=docTable(doc,['Werkdatum','Dagelijkse taken','Dagscore','Tijdregels','Duur'],report.byDay.map(d=>[d.datum,`${d.doneDaily}/${activeDaily}`,`${scoreP(d.doneDaily,activeDaily)}%`,d.doneAll,d.duur?formatUren(d.duur):'—']),y);
+    }
+    if(report.openDay.length){
+      y=sectionTitle(doc,'Open dagelijkse taken',y+8);
+      y=docTable(doc,['Taak-ID','Naam','Verantwoordelijke','Prioriteit'],report.openDay.map(t=>[t.taak_id,t.naam,peopleText(t.verantwoordelijke),t.prioriteit||'Normaal']),y);
+    }
+    y=sectionTitle(doc,'Detailtabel afvinkingen',y+8);
+    const detailRows=report.workRows.map(a=>[a.datum,a.taken?.taak_id||'',a.taken?.naam||'',a.taken?.frequentie||'',reportScorePeriodLabel(a),a.gedaan?'Ja':'Nee',peopleText(reportPeopleForRecord(a)),recordDuration(a)?`${recordDuration(a)} min`:'',`${personDurationPlain(a)}${personDurationPlain(a)&&cleanNote(a.opmerking)?' · ':''}${cleanNote(a.opmerking)}`]);
+    y=docTable(doc,['Datum','ID','Taak','Type','Gedaan','Uitvoerder','Duur','Opmerking'],detailRows,y,{styles:{fontSize:7,cellPadding:1.8},columnStyles:{2:{cellWidth:42},7:{cellWidth:36}}});
+    doc.setFontSize(8);doc.setTextColor(107,114,128);
+    const note='Scoreberekening: datum = werkdatum van de papieren. Wekelijkse en maandelijkse taken blijven als type herkenbaar en tellen voor de score maar één keer per week/maand, terwijl alle tijdregels meetellen in dagrapport, duur en capaciteitsbenutting.';
+    y=ensurePdfSpace(doc,y+8,22);doc.text(doc.splitTextToSize(note,182),14,y+4);
+    pdfFooter(doc);
+    doc.save(`STOPS_${report.range.slug}.pdf`);
+    toast('PDF gedownload ✓','s');
+  }catch(e){
+    toast('PDF-fout: '+e.message,'e');
+    console.error('PDF error:',e);
+  }finally{
+    if(btn){btn.textContent=origTxt;btn.disabled=false}
+  }
+};
+
+
+/* ─── TEAM ─── */
+function renderTeam(){
+  const capStats=buildCapacityStats(capacityRowsCurrentToday(),1);
+  const capEl=document.getElementById('team-capacity');
+  if(capEl)capEl.innerHTML=renderCapacityHtml(capStats);
+
+  const cnt={};const dur={};
+  capacityRowsCurrentToday().forEach(a=>{if(a.gedaan&&a.uitvoerder){addPeopleCount(cnt,a.uitvoerder);addPeopleDuration(dur,a)}});
+  const ranked=Object.entries(cnt).sort((a,b)=>(dur[b[0]]||0)-(dur[a[0]]||0)||b[1]-a[1]);
+  const maxMin=Math.max(1,...ranked.map(([name])=>dur[name]||0));
+  document.getElementById('team-today').innerHTML=ranked.length===0
+    ?'<div class="empty-state"><div class="empty-txt">Nog niemand afgevinkt vandaag</div></div>'
+    :ranked.map(([name,c],i)=>`<div class="rank-row"><div class="rank-num">${i+1}</div><div class="rank-av">${name[0]}</div><div class="rank-name">${name}<div style="font-size:10px;color:var(--txt3);font-family:var(--mono);font-weight:400">${formatUren(dur[name]||0)||'0min'} geregistreerd</div></div><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.round((dur[name]||0)/maxMin*100)}%;background:var(--orange)"></div></div></div><div class="rank-cnt">${c} taken</div></div>`).join('');
+  document.getElementById('team-members').innerHTML=allLeden.map(l=>`<div class="rank-row">
+    <div class="rank-av">${l.naam[0]}</div>
+    <div class="rank-name" style="margin-left:4px">${l.naam}</div>
+    <button class="btn btn-danger btn-xs" onclick="showRemoveLid('${l.id}','${l.naam}')">✕</button>
+    <div class="confirm-inline" id="rem-${l.id}"><strong>Verwijderen?</strong><button class="btn btn-danger btn-xs" onclick="removeLid('${l.id}','${l.naam}')">Ja</button><button class="btn btn-ghost btn-xs" onclick="document.getElementById('rem-${l.id}').classList.remove('open')">Nee</button></div>
+  </div>`).join('');
+}
+window.showRemoveLid=(id)=>{event?.stopPropagation();document.getElementById('rem-'+id)?.classList.add('open')};
+window.openTeamModal=()=>{document.getElementById('fi-tnaam').value='';document.getElementById('team-ov').classList.add('open')};
+window.saveTeamLid=async()=>{
+  const naam=document.getElementById('fi-tnaam').value.trim();if(!naam)return;
+  const{error}=await SB.from('team_leden').insert({naam});
+  if(error){toast('Fout: '+error.message,'e');return}
+  closeOv('team-ov');invalidateReportCache(true);await fetchLeden();buildGNS();renderTeam();toast(`${naam} toegevoegd`,'s');
+};
+window.removeLid=async(id,naam)=>{
+  await SB.from('team_leden').update({actief:false}).eq('id',id);
+  await fetchLeden();buildGNS();renderTeam();toast(`${naam} verwijderd`,'i');
+};
+
+/* ─── TOAST ─── */
+function toast(msg,type='i'){
+  const wrap=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
+  wrap.appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+window.toast=toast;
+</script>
+</body>
+</html>
